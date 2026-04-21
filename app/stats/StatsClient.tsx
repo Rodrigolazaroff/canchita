@@ -278,31 +278,36 @@ function SummaryChip({ icon, label, value }: { icon: React.ReactNode; label: str
 function PlayerCard({ player, rank }: { player: PlayerRow; rank: number }) {
   const luck = luckLabel(player.win_pct)
   return (
-    <Card className="flex items-center gap-4">
-      {/* Rank */}
-      <span className="font-display text-xl w-7 text-center flex-shrink-0 text-text-muted">
-        {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
-      </span>
-
-      {/* Avatar */}
-      <PlayerAvatar name={player.name} id={player.player_id} size={48} />
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="font-body font-semibold text-text-primary truncate">{player.name}</p>
-        <p className={cn('text-xs font-body', luck.color)}>{luck.label}</p>
+    <Card className="flex flex-col gap-3">
+      {/* Fila superior */}
+      <div className="flex items-center gap-3">
+        <span className="font-display text-xl w-7 text-center flex-shrink-0 text-text-muted">
+          {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank}
+        </span>
+        <PlayerAvatar name={player.name} id={player.player_id} size={44} />
+        <div className="flex-1 min-w-0">
+          <p className="font-body font-semibold text-text-primary truncate">{player.name}</p>
+          <p className={cn('text-xs font-body', luck.color)}>{luck.label}</p>
+        </div>
       </div>
 
-      {/* Stats compactos */}
-      <div className="flex flex-col items-end gap-1 flex-shrink-0">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-text-muted font-body">{player.matches_played}🎮</span>
-          <span className="font-display text-lg text-green-light">{player.total_goals}</span>
-          <span className="text-xs text-text-muted font-body">⚽</span>
-        </div>
-        <span className="text-xs text-text-muted font-body">{player.win_pct}% victorias</span>
+      {/* Chips de stats uniformes */}
+      <div className="flex gap-2 pl-10">
+        <StatChip value={player.matches_played} label="PJ" />
+        <StatChip value={player.total_goals} label="⚽" color="text-green-light" />
+        <StatChip value={player.goal_avg.toFixed(2)} label="G/P" />
+        <StatChip value={`${player.win_pct}%`} label="V" />
       </div>
     </Card>
+  )
+}
+
+function StatChip({ value, label, color }: { value: string | number; label: string; color?: string }) {
+  return (
+    <div className="flex-1 flex flex-col items-center bg-border/40 rounded-xl py-2 px-1">
+      <span className={cn('font-display text-base leading-tight', color ?? 'text-text-primary')}>{value}</span>
+      <span className="text-[10px] text-text-muted font-body uppercase tracking-wide">{label}</span>
+    </div>
   )
 }
 

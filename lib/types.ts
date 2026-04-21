@@ -29,6 +29,8 @@ export interface Player {
   is_guest: boolean
   guest_label: string | null
   is_active: boolean
+  is_injured?: boolean
+  active_injury_start?: string | null
   created_at: string
 }
 

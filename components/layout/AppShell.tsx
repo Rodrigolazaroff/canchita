@@ -1,5 +1,4 @@
 import { BottomNav } from './BottomNav'
-import { Sidebar } from './Sidebar'
 import { Header } from './Header'
 import type { Profile } from '@/lib/types'
 
@@ -9,16 +8,13 @@ interface AppShellProps {
   isAdmin?: boolean
 }
 
-export function AppShell({ profile, children, isAdmin }: AppShellProps) {
+export function AppShell({ profile, children }: AppShellProps) {
   return (
     <div className="min-h-screen bg-bg">
-      <Sidebar isAdmin={isAdmin} />
-      <div className="md:ml-56">
-        <Header profile={profile} />
-        <main className="max-w-2xl mx-auto px-4 py-6 pb-24 md:pb-8">
-          {children}
-        </main>
-      </div>
+      <Header profile={profile} />
+      <main className="max-w-2xl mx-auto px-4 py-6 pb-24">
+        {children}
+      </main>
       <BottomNav />
     </div>
   )

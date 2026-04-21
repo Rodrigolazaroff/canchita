@@ -57,9 +57,9 @@ export function ShareImageModal({
     ctx.fillStyle = '#0a0f0d'
     ctx.fillRect(0, 0, W, H)
 
-    // ── Franjas verticales alternadas (antes de las líneas) ──────────────────
-    const STRIPE_COUNT = 9
-    const stripeW = FW / STRIPE_COUNT
+    // ── Franjas horizontales alternadas (antes de las líneas) ──────────────────
+    const STRIPE_COUNT = 10
+    const stripeH = FH / STRIPE_COUNT
     ctx.save()
     ctx.beginPath()
     ctx.roundRect(FX, FY, FW, FH, 14)
@@ -67,7 +67,7 @@ export function ShareImageModal({
 
     for (let i = 0; i < STRIPE_COUNT; i++) {
       ctx.fillStyle = i % 2 === 0 ? '#33a633' : '#2a922a'
-      ctx.fillRect(FX + i * stripeW, FY, stripeW, FH)
+      ctx.fillRect(FX, FY + i * stripeH, FW, stripeH)
     }
     ctx.restore()
 
@@ -200,21 +200,21 @@ export function ShareImageModal({
       ctx.shadowColor = 'rgba(0,0,0,0.5)'
       ctx.shadowBlur = 8
 
-      // Círculo jugador
-      ctx.fillStyle = isDark ? '#1e3a5f' : '#f8fafc'
+      // Círculo jugador — mismo color que la app (playerColor)
+      ctx.fillStyle = playerColor(p.player_id)
       ctx.beginPath()
       ctx.arc(px, py, R, 0, Math.PI * 2)
       ctx.fill()
 
-      ctx.strokeStyle = isDark ? '#93c5fd' : '#1e293b'
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)'
       ctx.lineWidth = 2.5
       ctx.stroke()
 
       ctx.shadowBlur = 0
 
-      // Iniciales
-      ctx.fillStyle = isDark ? '#bfdbfe' : '#0f172a'
-      ctx.font = `bold 18px sans-serif`
+      // Iniciales — siempre blancas
+      ctx.fillStyle = '#ffffff'
+      ctx.font = `bold 20px sans-serif`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(initials(p.name), px, py)
@@ -278,7 +278,7 @@ export function ShareImageModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="¡Listo para compartir!" className="max-w-sm">
+    <Modal open={open} onClose={onClose} title="¡Listo para compartir!" className="max-w-sm" disableBackdropClose>
       <canvas ref={canvasRef} className="hidden" />
       <div className="flex flex-col gap-4">
         {imageUrl ? (

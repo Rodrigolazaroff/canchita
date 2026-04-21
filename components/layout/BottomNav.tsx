@@ -6,11 +6,11 @@ import { cn } from '@/lib/utils/format'
 import { useGroupStore } from '@/lib/stores/group'
 
 const navItems = [
-  { href: '/dashboard',  label: 'Inicio',  icon: Home },
-  { href: '/matches/new', label: 'Crear',  icon: Plus, highlight: true },
-  { href: '/stats',      label: 'Stats',   icon: BarChart2 },
+  { href: '/dashboard',  label: 'Inicio',    icon: Home },
+  { href: '/stats',      label: 'Stats',     icon: BarChart2 },
+  { href: '/matches/new', label: 'Crear',   icon: Plus, highlight: true },
   { href: '/history',    label: 'Historial', icon: Clock },
-  { href: '/profile',    label: 'Perfil',  icon: User },
+  { href: '/profile',    label: 'Perfil',    icon: User },
 ]
 
 export function BottomNav() {

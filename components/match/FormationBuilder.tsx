@@ -100,7 +100,8 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 100, tolerance: 5 } })
+    // delay 200ms + tolerance 8px: ignora scrolls pero detecta drags en mobile
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
   )
 
   const assignedIds = new Set(Object.values(assignments))
@@ -327,7 +328,9 @@ function DraggablePlayerChip({ player }: { player: Player }) {
         'flex items-center gap-1.5 px-2 py-1 bg-surface border border-border rounded-full cursor-grab active:cursor-grabbing select-none hover:border-green-primary/40 transition-colors',
         isDragging && 'opacity-30'
       )}
-      style={{ transform: CSS.Translate.toString(transform) }}
+      // touch-action:none es OBLIGATORIO en mobile para que dnd-kit capture
+      // el touch antes de que el browser lo interprete como scroll
+      style={{ transform: CSS.Translate.toString(transform), touchAction: 'none' }}
     >
       <PlayerAvatar name={player.name} id={player.id} photoUrl={player.photo_url} size={22} />
       <span className="text-[11px] font-body text-text-primary truncate">

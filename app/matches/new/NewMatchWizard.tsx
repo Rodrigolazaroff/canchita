@@ -7,6 +7,8 @@ import { cn, nextOccurrenceOf, pricePerPlayer } from '@/lib/utils/format'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { toast } from 'sonner'
+import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 import { FormationBuilder } from '@/components/match/FormationBuilder'
 import { ShareImageModal } from '@/components/match/ShareImageModal'
 import type { Group, Player, Venue, PaymentAlias, FormationData, MatchType } from '@/lib/types'
@@ -176,6 +178,10 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-3">
+        {/* Cancelar → vuelve al dashboard */}
+        <Link href="/dashboard" className="p-1 -ml-1 text-text-muted hover:text-text-primary transition-colors">
+          <ArrowLeft size={22} />
+        </Link>
         <h1 className="font-display text-2xl text-text-primary flex-1">Crear Partido</h1>
         <span className="text-sm text-text-muted font-body">Paso {step + 1} de 3</span>
       </div>
@@ -294,12 +300,31 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
               value={matchDate}
               onChange={e => setMatchDate(e.target.value)}
             />
-            <Input
-              label="Hora"
-              type="time"
-              value={matchTime}
-              onChange={e => setMatchTime(e.target.value)}
-            />
+            {/* Selector de hora como listas desplegables — evita el reloj nativo en mobile */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm text-text-secondary font-body">Hora</label>
+              <div className="flex gap-1">
+                <select
+                  value={matchTime.split(':')[0]}
+                  onChange={e => setMatchTime(`${e.target.value}:${matchTime.split(':')[1]}`)}
+                  className="flex-1 h-12 bg-surface border border-border rounded-xl px-2 text-text-primary font-body focus:outline-none focus:border-green-primary text-center"
+                >
+                  {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map(h => (
+                    <option key={h} value={h}>{h}</option>
+                  ))}
+                </select>
+                <span className="flex items-center text-text-muted font-display text-lg">:</span>
+                <select
+                  value={matchTime.split(':')[1]}
+                  onChange={e => setMatchTime(`${matchTime.split(':')[0]}:${e.target.value}`)}
+                  className="flex-1 h-12 bg-surface border border-border rounded-xl px-2 text-text-primary font-body focus:outline-none focus:border-green-primary text-center"
+                >
+                  {['00', '15', '30', '45'].map(m => (
+                    <option key={m} value={m}>{m}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
           <Input

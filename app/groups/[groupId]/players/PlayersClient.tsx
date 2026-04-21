@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PlayerCardSkeleton } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
-import { Plus, MoreVertical, UserCheck, UserX, Pencil } from 'lucide-react'
+import { Plus, MoreVertical, UserCheck, UserX, Pencil, Bandage, HeartPulse } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/format'
 import type { Player } from '@/lib/types'
@@ -77,6 +77,36 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
     setPlayers(prev => prev.map(p => p.id === player.id ? { ...p, is_active: !p.is_active } : p))
     setMenuPlayer(null)
     toast.success(player.is_active ? 'Jugador desactivado' : 'Jugador reactivado')
+  }
+
+  async function toggleInjury(player: Player) {
+    const supabase = createClient()
+    const today = new Date().toISOString().split('T')[0]
+    if (player.is_injured) {
+      // Cerrar lesión activa
+      const { data: active } = await supabase
+        .from('player_injuries')
+        .select('id, start_date')
+        .eq('player_id', player.id)
+        .is('end_date', null)
+        .single()
+      if (active) {
+        const start = new Date(active.start_date)
+        const end   = new Date(today)
+        const days  = Math.max(1, Math.round((end.getTime() - start.getTime()) / 86400000))
+        await supabase.from('player_injuries').update({ end_date: today, days_total: days }).eq('id', active.id)
+      }
+      await supabase.from('players').update({ is_injured: false, active_injury_start: null }).eq('id', player.id)
+      setPlayers(prev => prev.map(p => p.id === player.id ? { ...p, is_injured: false } : p))
+      toast.success(`${player.name} dado de alta ✅`)
+    } else {
+      // Abrir nueva lesión
+      await supabase.from('player_injuries').insert({ player_id: player.id, start_date: today })
+      await supabase.from('players').update({ is_injured: true, active_injury_start: today }).eq('id', player.id)
+      setPlayers(prev => prev.map(p => p.id === player.id ? { ...p, is_injured: true } : p))
+      toast.success(`${player.name} marcado como lesionado 🩹`)
+    }
+    setMenuPlayer(null)
   }
 
   function openEdit(player: Player) {
@@ -154,6 +184,19 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
               <Pencil size={18} className="text-text-muted" /> Editar nombre
             </button>
             <button
+              onClick={() => toggleInjury(menuPlayer)}
+              className={cn(
+                'flex items-center gap-3 p-3 rounded-xl font-body',
+                menuPlayer.is_injured
+                  ? 'hover:bg-green-primary/10 text-green-light'
+                  : 'hover:bg-orange-900/20 text-orange-400'
+              )}
+            >
+              {menuPlayer.is_injured
+                ? <><HeartPulse size={18} /> Dar de alta</>
+                : <><Bandage size={18} /> Marcar lesionado</>}
+            </button>
+            <button
               onClick={() => toggleActive(menuPlayer)}
               className={cn(
                 'flex items-center gap-3 p-3 rounded-xl font-body',
@@ -175,11 +218,17 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
 
 function PlayerRow({ player, onMenu }: { player: Player; onMenu: () => void }) {
   return (
-    <div className="flex items-center gap-3 p-4 bg-surface border border-border rounded-2xl">
+    <div className={cn(
+      'flex items-center gap-3 p-4 bg-surface border rounded-2xl',
+      player.is_injured ? 'border-orange-500/40' : 'border-border'
+    )}>
       <PlayerAvatar name={player.name} id={player.id} photoUrl={player.photo_url} size={44} />
       <div className="flex-1 min-w-0">
         <p className="font-body font-semibold text-text-primary truncate">{player.name}</p>
-        {player.is_guest && (
+        {player.is_injured && (
+          <p className="text-xs text-orange-400 font-body">🩹 Lesionado</p>
+        )}
+        {!player.is_injured && player.is_guest && (
           <p className="text-xs text-text-muted font-body">
             Invitado{player.guest_label ? ` · ${player.guest_label}` : ''}
           </p>
@@ -187,11 +236,13 @@ function PlayerRow({ player, onMenu }: { player: Player; onMenu: () => void }) {
       </div>
       <span className={cn(
         'text-xs px-2 py-0.5 rounded-full font-body',
-        player.is_guest
-          ? 'bg-yellow-900/30 text-yellow-400'
-          : 'bg-green-primary/15 text-green-light'
+        player.is_injured
+          ? 'bg-orange-900/30 text-orange-400'
+          : player.is_guest
+            ? 'bg-yellow-900/30 text-yellow-400'
+            : 'bg-green-primary/15 text-green-light'
       )}>
-        {player.is_guest ? 'Invitado' : 'Habitual'}
+        {player.is_injured ? '🩹' : player.is_guest ? 'Invitado' : 'Habitual'}
       </span>
       <button onClick={onMenu} className="p-1 text-text-muted hover:text-text-primary">
         <MoreVertical size={18} />

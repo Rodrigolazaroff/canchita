@@ -9,9 +9,10 @@ interface ModalProps {
   title?: string
   children: React.ReactNode
   className?: string
+  disableBackdropClose?: boolean
 }
 
-export function Modal({ open, onClose, title, children, className }: ModalProps) {
+export function Modal({ open, onClose, title, children, className, disableBackdropClose }: ModalProps) {
   useEffect(() => {
     if (open) document.body.style.overflow = 'hidden'
     else document.body.style.overflow = ''
@@ -22,7 +23,7 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={disableBackdropClose ? undefined : onClose} />
       <div className={cn(
         'relative w-full sm:max-w-md bg-surface border border-border rounded-t-3xl sm:rounded-2xl',
         'animate-slide-up sm:animate-fade-in p-6 pb-8 sm:pb-6 max-h-[90vh] overflow-y-auto',
