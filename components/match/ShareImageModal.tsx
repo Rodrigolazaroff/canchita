@@ -36,107 +36,201 @@ export function ShareImageModal({
   async function generateImage() {
     const canvas = canvasRef.current
     if (!canvas) return
-    const SIZE = 1080
-    canvas.width = SIZE
-    canvas.height = SIZE
+
+    // ── Dimensiones ─────────────────────────────────────────────────────────
+    const W = 1080
+    const H = 1280
+    canvas.width = W
+    canvas.height = H
     const ctx = canvas.getContext('2d')!
 
-    // Background
+    // Márgenes del campo dentro del canvas
+    const FX = 50        // left/right del campo
+    const FY = 110       // top del campo
+    const FW = W - FX * 2
+    const FH = 950       // alto del campo
+
+    const cx = W / 2            // centro horizontal
+    const cy = FY + FH / 2      // centro vertical del campo
+
+    // ── Fondo del canvas ─────────────────────────────────────────────────────
     ctx.fillStyle = '#0a0f0d'
-    ctx.fillRect(0, 0, SIZE, SIZE)
+    ctx.fillRect(0, 0, W, H)
 
-    // Field green background
-    ctx.fillStyle = '#0d2a18'
-    ctx.roundRect(40, 100, SIZE - 80, SIZE - 200, 20)
-    ctx.fill()
-
-    // Field lines
-    ctx.strokeStyle = '#2d6a40'
-    ctx.lineWidth = 3
-
-    // Outer boundary
-    ctx.strokeRect(60, 120, SIZE - 120, SIZE - 240)
-
-    // Center line
-    ctx.setLineDash([10, 8])
+    // ── Franjas verticales alternadas (antes de las líneas) ──────────────────
+    const STRIPE_COUNT = 9
+    const stripeW = FW / STRIPE_COUNT
+    ctx.save()
     ctx.beginPath()
-    ctx.moveTo(60, SIZE / 2)
-    ctx.lineTo(SIZE - 60, SIZE / 2)
-    ctx.stroke()
+    ctx.roundRect(FX, FY, FW, FH, 14)
+    ctx.clip()
+
+    for (let i = 0; i < STRIPE_COUNT; i++) {
+      ctx.fillStyle = i % 2 === 0 ? '#33a633' : '#2a922a'
+      ctx.fillRect(FX + i * stripeW, FY, stripeW, FH)
+    }
+    ctx.restore()
+
+    // ── Líneas del campo ─────────────────────────────────────────────────────
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)'
+    ctx.lineWidth = 3
     ctx.setLineDash([])
 
-    // Center circle
+    // Borde exterior
+    ctx.strokeRect(FX, FY, FW, FH)
+
+    // Línea del medio
     ctx.beginPath()
-    ctx.arc(SIZE / 2, SIZE / 2, 80, 0, Math.PI * 2)
+    ctx.moveTo(FX, cy)
+    ctx.lineTo(FX + FW, cy)
     ctx.stroke()
 
-    // Header
-    ctx.fillStyle = '#4ade80'
-    ctx.font = 'bold 48px sans-serif'
+    // Círculo central
+    ctx.beginPath()
+    ctx.arc(cx, cy, 80, 0, Math.PI * 2)
+    ctx.stroke()
+
+    // Punto central
+    ctx.fillStyle = 'rgba(255,255,255,0.85)'
+    ctx.beginPath()
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2)
+    ctx.fill()
+
+    // ── Área grande arriba ────────────────────────────────────────────────────
+    const bigAreaW = 420, bigAreaH = 155
+    ctx.strokeRect(cx - bigAreaW / 2, FY, bigAreaW, bigAreaH)
+
+    // ── Área chica arriba ─────────────────────────────────────────────────────
+    const smallAreaW = 210, smallAreaH = 70
+    ctx.strokeRect(cx - smallAreaW / 2, FY, smallAreaW, smallAreaH)
+
+    // ── Área grande abajo ─────────────────────────────────────────────────────
+    ctx.strokeRect(cx - bigAreaW / 2, FY + FH - bigAreaH, bigAreaW, bigAreaH)
+
+    // ── Área chica abajo ──────────────────────────────────────────────────────
+    ctx.strokeRect(cx - smallAreaW / 2, FY + FH - smallAreaH, smallAreaW, smallAreaH)
+
+    // ── Arcos de penales (semicírculos fuera del área grande) ─────────────────
+    ctx.beginPath()
+    ctx.arc(cx, FY + bigAreaH, 70, Math.PI, Math.PI * 2)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(cx, FY + FH - bigAreaH, 70, 0, Math.PI)
+    ctx.stroke()
+
+    // ── Arcos de córner ───────────────────────────────────────────────────────
+    const cr = 22
+    ;[[FX, FY, 0, Math.PI / 2], [FX + FW, FY, Math.PI / 2, Math.PI],
+      [FX, FY + FH, -Math.PI / 2, 0], [FX + FW, FY + FH, Math.PI, -Math.PI / 2]
+    ].forEach(([x, y, start, end]) => {
+      ctx.beginPath()
+      ctx.arc(x as number, y as number, cr, start as number, end as number)
+      ctx.stroke()
+    })
+
+    // ── Puntos de penal ───────────────────────────────────────────────────────
+    const penaltyOffset = 110
+    ;[FY + penaltyOffset, FY + FH - penaltyOffset].forEach(py => {
+      ctx.fillStyle = 'rgba(255,255,255,0.85)'
+      ctx.beginPath()
+      ctx.arc(cx, py, 5, 0, Math.PI * 2)
+      ctx.fill()
+    })
+
+    // ── Arcos (porterías) arriba y abajo ──────────────────────────────────────
+    const goalW = 150, goalH = 22
+    ctx.strokeStyle = 'rgba(255,255,255,0.95)'
+    ctx.lineWidth = 4
+    // Arco arriba
+    ctx.strokeRect(cx - goalW / 2, FY - goalH, goalW, goalH)
+    // Arco abajo
+    ctx.strokeRect(cx - goalW / 2, FY + FH, goalW, goalH)
+
+    // ── HEADER ────────────────────────────────────────────────────────────────
     ctx.textAlign = 'center'
-    ctx.fillText('CANCHITA', SIZE / 2, 60)
+
+    ctx.fillStyle = '#4ade80'
+    ctx.font = 'bold 52px sans-serif'
+    ctx.fillText('CANCHITA', cx, 62)
 
     ctx.fillStyle = '#9ca3af'
-    ctx.font = '28px sans-serif'
-    ctx.fillText(groupName, SIZE / 2, 95)
+    ctx.font = '30px sans-serif'
+    ctx.fillText(groupName, cx, 100)
 
-    // Match info
+    // ── FOOTER ────────────────────────────────────────────────────────────────
+    // Fondo semitransparente para legibilidad
+    const footerTop = FY + FH + 30
+    ctx.fillStyle = 'rgba(0,0,0,0.45)'
+    ctx.roundRect(FX, footerTop - 10, FW, H - footerTop, 14)
+    ctx.fill()
+
     const dateStr = new Date(matchDate + 'T00:00:00').toLocaleDateString('es-AR', {
       weekday: 'long', day: 'numeric', month: 'long',
     })
     ctx.fillStyle = '#f0fdf4'
-    ctx.font = 'bold 32px sans-serif'
-    ctx.fillText(`${dateStr} · ${matchTime.slice(0, 5)}`, SIZE / 2, SIZE - 120)
+    ctx.font = 'bold 34px sans-serif'
+    ctx.fillText(`${dateStr} · ${matchTime.slice(0, 5)}`, cx, footerTop + 46)
 
     if (venueName) {
       ctx.fillStyle = '#9ca3af'
-      ctx.font = '26px sans-serif'
-      ctx.fillText(venueName, SIZE / 2, SIZE - 80)
+      ctx.font = '28px sans-serif'
+      ctx.fillText(venueName, cx, footerTop + 92)
     }
 
-    // Footer
-    const footerParts = [pricePerPlayer && `Cada uno paga ${pricePerPlayer}`, aliasText && `Alias: ${aliasText}`].filter(Boolean)
+    const footerParts = [
+      pricePerPlayer && `Cada uno paga ${pricePerPlayer}`,
+      aliasText && `Alias: ${aliasText}`,
+    ].filter(Boolean)
     if (footerParts.length) {
       ctx.fillStyle = '#4ade80'
-      ctx.font = 'bold 26px sans-serif'
-      ctx.fillText(footerParts.join(' · '), SIZE / 2, SIZE - 30)
+      ctx.font = 'bold 28px sans-serif'
+      ctx.fillText(footerParts.join(' · '), cx, footerTop + 138)
     }
 
-    // Draw players
-    const fieldLeft = 80, fieldTop = 130, fieldW = SIZE - 160, fieldH = SIZE - 280
-
+    // ── JUGADORES ─────────────────────────────────────────────────────────────
     for (const p of formation.players) {
       if (p.position_x === null || p.position_y === null) continue
-      const px = fieldLeft + p.position_x * fieldW
-      const py = fieldTop + p.position_y * fieldH
 
+      const px = FX + p.position_x * FW
+      const py = FY + p.position_y * FH
       const isDark = p.team === 'dark'
-      ctx.fillStyle = isDark ? '#1e3a5f' : '#f0fdf4'
+      const R = 32
+
+      // Sombra
+      ctx.shadowColor = 'rgba(0,0,0,0.5)'
+      ctx.shadowBlur = 8
+
+      // Círculo jugador
+      ctx.fillStyle = isDark ? '#1e3a5f' : '#f8fafc'
       ctx.beginPath()
-      ctx.arc(px, py, 30, 0, Math.PI * 2)
+      ctx.arc(px, py, R, 0, Math.PI * 2)
       ctx.fill()
 
-      ctx.strokeStyle = isDark ? '#93c5fd' : '#0a0f0d'
-      ctx.lineWidth = 2
+      ctx.strokeStyle = isDark ? '#93c5fd' : '#1e293b'
+      ctx.lineWidth = 2.5
       ctx.stroke()
 
-      ctx.fillStyle = isDark ? '#93c5fd' : '#0a0f0d'
-      ctx.font = 'bold 20px sans-serif'
+      ctx.shadowBlur = 0
+
+      // Iniciales
+      ctx.fillStyle = isDark ? '#bfdbfe' : '#0f172a'
+      ctx.font = `bold 18px sans-serif`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(initials(p.name), px, py)
       ctx.textBaseline = 'alphabetic'
 
-      // Name label
-      ctx.fillStyle = 'rgba(0,0,0,0.7)'
-      const nameText = p.name.split(' ')[0]
-      const tw = ctx.measureText(nameText).width + 12
-      ctx.roundRect(px - tw / 2, py + 35, tw, 20, 5)
+      // Badge con nombre COMPLETO
+      ctx.font = '13px sans-serif'
+      const nameText = p.name          // ← nombre completo, sin split
+      const tw = Math.min(ctx.measureText(nameText).width + 14, 150)
+
+      ctx.fillStyle = 'rgba(0,0,0,0.72)'
+      ctx.roundRect(px - tw / 2, py + R + 4, tw, 20, 5)
       ctx.fill()
 
       ctx.fillStyle = '#f0fdf4'
-      ctx.font = '14px sans-serif'
-      ctx.fillText(nameText, px, py + 50)
+      ctx.fillText(nameText, px, py + R + 18)
     }
 
     const url = canvas.toDataURL('image/png')
@@ -195,7 +289,7 @@ export function ShareImageModal({
             className="w-full rounded-xl border border-border"
           />
         ) : (
-          <div className="w-full aspect-square bg-border rounded-xl animate-pulse flex items-center justify-center">
+          <div className="w-full bg-border rounded-xl animate-pulse flex items-center justify-center" style={{ aspectRatio: '1080/1280' }}>
             <p className="text-text-muted font-body">Generando imagen...</p>
           </div>
         )}

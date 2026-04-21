@@ -1,15 +1,16 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Plus, Clock, User } from 'lucide-react'
+import { Home, Plus, Clock, User, BarChart2 } from 'lucide-react'
 import { cn } from '@/lib/utils/format'
 import { useGroupStore } from '@/lib/stores/group'
 
 const navItems = [
-  { href: '/dashboard', label: 'Inicio', icon: Home },
-  { href: '/matches/new', label: 'Crear', icon: Plus, highlight: true },
-  { href: '/history', label: 'Historial', icon: Clock },
-  { href: '/profile', label: 'Perfil', icon: User },
+  { href: '/dashboard',  label: 'Inicio',  icon: Home },
+  { href: '/matches/new', label: 'Crear',  icon: Plus, highlight: true },
+  { href: '/stats',      label: 'Stats',   icon: BarChart2 },
+  { href: '/history',    label: 'Historial', icon: Clock },
+  { href: '/profile',    label: 'Perfil',  icon: User },
 ]
 
 export function BottomNav() {

@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Plus, Clock, User, Settings, Shield } from 'lucide-react'
+import { Home, Plus, Clock, User, Settings, Shield, BarChart2 } from 'lucide-react'
 import { cn } from '@/lib/utils/format'
 import { useGroupStore } from '@/lib/stores/group'
 
@@ -9,6 +9,7 @@ const navItems = [
   { href: '/dashboard', label: 'Inicio', icon: Home },
   { href: '/matches/new', label: 'Crear Partido', icon: Plus },
   { href: '/history', label: 'Historial', icon: Clock },
+  { href: '/stats', label: 'Estadísticas', icon: BarChart2 },
   { href: '/profile', label: 'Perfil', icon: User },
   { href: '/settings/aliases', label: 'Configuración', icon: Settings },
 ]
