@@ -175,9 +175,13 @@ export function ShareImageModal({
     ctx.fillText(`${dateStrShort} · ${matchTime.slice(0, 5)}`, rightX, 72)
 
     // ── JUGADORES ─────────────────────────────────────────────────────────────
-    // Sin sombra — evita el aspecto "desvanecido"
-    ctx.shadowColor = 'transparent'
+    // Aislamos el estado del canvas para evitar sombras/alphas previos
+    ctx.save()
+    ctx.shadowColor = 'rgba(0,0,0,0)'
     ctx.shadowBlur = 0
+    ctx.shadowOffsetX = 0
+    ctx.shadowOffsetY = 0
+    ctx.globalAlpha = 1
 
     for (const p of formation.players) {
       if (p.position_x === null || p.position_y === null) continue
@@ -187,10 +191,10 @@ export function ShareImageModal({
       const isDark = p.team === 'dark'
       const R = 32
 
-      // Colores de equipo — sólidos, 100% opacos
-      const fillColor   = isDark ? '#1a1a2e' : '#ffffff'
-      const strokeColor = isDark ? '#ffffff' : '#1a1a2e'
-      const textColor   = isDark ? '#ffffff' : '#0f172a'
+      // Colores por equipo — puros, sin transparencia
+      const fillColor   = isDark ? '#000000' : '#ffffff'
+      const strokeColor = isDark ? '#ffffff' : '#000000'
+      const textColor   = isDark ? '#ffffff' : '#000000'
 
       // Círculo
       ctx.fillStyle = fillColor
@@ -198,9 +202,9 @@ export function ShareImageModal({
       ctx.arc(px, py, R, 0, Math.PI * 2)
       ctx.fill()
 
-      // Borde de contraste
+      // Borde de contraste (grueso)
       ctx.strokeStyle = strokeColor
-      ctx.lineWidth = 3
+      ctx.lineWidth = 4
       ctx.stroke()
 
       // Iniciales adentro
@@ -223,6 +227,8 @@ export function ShareImageModal({
       ctx.fillStyle = '#f0fdf4'
       ctx.fillText(nameText, px, py + R + 18)
     }
+
+    ctx.restore()
 
     // ── FOOTER: precio + suplentes en 2 columnas ─────────────────────────────
     const footerY = FY + FH + goalH + 20 // debajo del arco inferior
