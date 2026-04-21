@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
 import { createClient } from '@/lib/supabase/client'
-import { initials, playerColor } from '@/lib/utils/format'
+import { initials } from '@/lib/utils/format'
 import type { FormationData } from '@/lib/types'
 import { Download, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -147,47 +147,38 @@ export function ShareImageModal({
     ctx.strokeRect(cx - goalW / 2, FY + FH, goalW, goalH)
 
     // ── HEADER ────────────────────────────────────────────────────────────────
+    // CANCHITA — centrado, arriba del arco superior
     ctx.textAlign = 'center'
-
     ctx.fillStyle = '#4ade80'
-    ctx.font = 'bold 52px sans-serif'
-    ctx.fillText('CANCHITA', cx, 62)
+    ctx.font = 'bold 44px sans-serif'
+    ctx.fillText('CANCHITA', cx, 55)
 
-    ctx.fillStyle = '#9ca3af'
-    ctx.font = '30px sans-serif'
-    ctx.fillText(groupName, cx, 100)
+    // Nombre del grupo — arriba-izquierda
+    ctx.textAlign = 'left'
+    ctx.fillStyle = '#e5e7eb'
+    ctx.font = 'bold 22px sans-serif'
+    ctx.fillText(groupName, FX + 10, 50)
 
-    // ── FOOTER ────────────────────────────────────────────────────────────────
-    // Fondo semitransparente para legibilidad
-    const footerTop = FY + FH + 30
-    ctx.fillStyle = 'rgba(0,0,0,0.45)'
-    ctx.roundRect(FX, footerTop - 10, FW, H - footerTop, 14)
-    ctx.fill()
-
-    const dateStr = new Date(matchDate + 'T00:00:00').toLocaleDateString('es-AR', {
-      weekday: 'long', day: 'numeric', month: 'long',
+    // Cancha + fecha + hora — arriba-derecha (2 líneas)
+    ctx.textAlign = 'right'
+    const rightX = FX + FW - 10
+    const dateStrShort = new Date(matchDate + 'T00:00:00').toLocaleDateString('es-AR', {
+      day: '2-digit', month: '2-digit',
     })
-    ctx.fillStyle = '#f0fdf4'
-    ctx.font = 'bold 34px sans-serif'
-    ctx.fillText(`${dateStr} · ${matchTime.slice(0, 5)}`, cx, footerTop + 46)
-
     if (venueName) {
-      ctx.fillStyle = '#9ca3af'
-      ctx.font = '28px sans-serif'
-      ctx.fillText(venueName, cx, footerTop + 92)
+      ctx.fillStyle = '#e5e7eb'
+      ctx.font = 'bold 20px sans-serif'
+      ctx.fillText(venueName, rightX, 42)
     }
-
-    const footerParts = [
-      pricePerPlayer && `Cada uno paga ${pricePerPlayer}`,
-      aliasText && `Alias: ${aliasText}`,
-    ].filter(Boolean)
-    if (footerParts.length) {
-      ctx.fillStyle = '#4ade80'
-      ctx.font = 'bold 28px sans-serif'
-      ctx.fillText(footerParts.join(' · '), cx, footerTop + 138)
-    }
+    ctx.fillStyle = '#9ca3af'
+    ctx.font = '20px sans-serif'
+    ctx.fillText(`${dateStrShort} · ${matchTime.slice(0, 5)}`, rightX, 72)
 
     // ── JUGADORES ─────────────────────────────────────────────────────────────
+    // Sin sombra — evita el aspecto "desvanecido"
+    ctx.shadowColor = 'transparent'
+    ctx.shadowBlur = 0
+
     for (const p of formation.players) {
       if (p.position_x === null || p.position_y === null) continue
 
@@ -196,33 +187,33 @@ export function ShareImageModal({
       const isDark = p.team === 'dark'
       const R = 32
 
-      // Sombra
-      ctx.shadowColor = 'rgba(0,0,0,0.5)'
-      ctx.shadowBlur = 8
+      // Colores de equipo — sólidos, 100% opacos
+      const fillColor   = isDark ? '#1a1a2e' : '#ffffff'
+      const strokeColor = isDark ? '#ffffff' : '#1a1a2e'
+      const textColor   = isDark ? '#ffffff' : '#0f172a'
 
-      // Círculo jugador — mismo color que la app (playerColor)
-      ctx.fillStyle = playerColor(p.player_id)
+      // Círculo
+      ctx.fillStyle = fillColor
       ctx.beginPath()
       ctx.arc(px, py, R, 0, Math.PI * 2)
       ctx.fill()
 
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)'
-      ctx.lineWidth = 2.5
+      // Borde de contraste
+      ctx.strokeStyle = strokeColor
+      ctx.lineWidth = 3
       ctx.stroke()
 
-      ctx.shadowBlur = 0
-
-      // Iniciales — siempre blancas
-      ctx.fillStyle = '#ffffff'
-      ctx.font = `bold 20px sans-serif`
+      // Iniciales adentro
+      ctx.fillStyle = textColor
+      ctx.font = 'bold 22px sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(initials(p.name), px, py)
       ctx.textBaseline = 'alphabetic'
 
-      // Badge con nombre COMPLETO
+      // Badge con nombre completo
       ctx.font = '13px sans-serif'
-      const nameText = p.name          // ← nombre completo, sin split
+      const nameText = p.name
       const tw = Math.min(ctx.measureText(nameText).width + 14, 150)
 
       ctx.fillStyle = 'rgba(0,0,0,0.72)'
@@ -231,6 +222,53 @@ export function ShareImageModal({
 
       ctx.fillStyle = '#f0fdf4'
       ctx.fillText(nameText, px, py + R + 18)
+    }
+
+    // ── FOOTER: precio + suplentes en 2 columnas ─────────────────────────────
+    const footerY = FY + FH + goalH + 20 // debajo del arco inferior
+
+    const footerParts = [
+      pricePerPlayer && `Por jugador ${pricePerPlayer}`,
+      aliasText && `Alias: ${aliasText}`,
+    ].filter(Boolean)
+    if (footerParts.length) {
+      ctx.fillStyle = '#4ade80'
+      ctx.font = 'bold 24px sans-serif'
+      ctx.textAlign = 'center'
+      ctx.fillText(footerParts.join(' · '), cx, footerY)
+    }
+
+    // Suplentes (sin posición asignada) → 2 columnas
+    const benchAll = formation.players.filter(p => p.position_x === null || p.position_y === null)
+    const benchDark  = benchAll.filter(p => p.team === 'dark')
+    const benchLight = benchAll.filter(p => p.team === 'light')
+    const leftCol  = benchDark.length  ? benchDark  : benchAll.slice(0, Math.ceil(benchAll.length / 2))
+    const rightCol = benchLight.length ? benchLight : benchAll.slice(Math.ceil(benchAll.length / 2))
+
+    const subsY = footerY + 40
+    const lineH = 26
+
+    const drawBenchCol = (
+      players: typeof benchAll,
+      startX: number,
+      align: 'left' | 'right',
+      title: string,
+      titleColor: string,
+    ) => {
+      ctx.textAlign = align
+      ctx.fillStyle = titleColor
+      ctx.font = 'bold 18px sans-serif'
+      ctx.fillText(title, startX, subsY)
+      ctx.fillStyle = '#e5e7eb'
+      ctx.font = '18px sans-serif'
+      players.forEach((p, i) => {
+        ctx.fillText(`• ${p.name}`, startX, subsY + lineH * (i + 1))
+      })
+    }
+
+    if (leftCol.length || rightCol.length) {
+      drawBenchCol(leftCol,  FX + 10,       'left',  'Suplentes Oscuro', '#93c5fd')
+      drawBenchCol(rightCol, FX + FW - 10,  'right', 'Suplentes Claro',  '#cbd5e1')
     }
 
     const url = canvas.toDataURL('image/png')
