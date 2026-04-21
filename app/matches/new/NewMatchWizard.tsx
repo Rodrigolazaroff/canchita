@@ -203,13 +203,18 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
           <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto no-scrollbar">
             {allPlayers.map(player => {
               const isSelected = selected.has(player.id)
+              const injured = !!player.is_injured
               return (
                 <button
                   key={player.id}
                   onClick={() => togglePlayer(player.id)}
                   className={cn(
                     'flex items-center gap-3 p-4 rounded-2xl border transition-all text-left w-full',
-                    isSelected ? 'border-green-primary bg-green-primary/10' : 'border-border bg-surface'
+                    injured
+                      ? 'border-orange-500/30 bg-surface/50 opacity-60 grayscale'
+                      : isSelected
+                        ? 'border-green-primary bg-green-primary/10'
+                        : 'border-border bg-surface'
                   )}
                 >
                   <div className={cn(
@@ -225,7 +230,8 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
                   <PlayerAvatar name={player.name} id={player.id} size={40} />
                   <div className="flex-1 min-w-0">
                     <p className="font-body font-semibold text-text-primary truncate">{player.name}</p>
-                    {player.is_guest && <p className="text-xs text-yellow-400 font-body">Invitado</p>}
+                    {injured && <p className="text-xs text-orange-400 font-body">🩹 Lesionado</p>}
+                    {!injured && player.is_guest && <p className="text-xs text-yellow-400 font-body">Invitado</p>}
                   </div>
                 </button>
               )

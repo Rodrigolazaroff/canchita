@@ -83,7 +83,7 @@ const POSITIONS: Record<MatchType, Slot[]> = {
   ],
 }
 
-const BENCH_SLOTS = 6
+const BENCH_PER_TEAM = 3
 
 interface FormationBuilderProps {
   players: Player[]
@@ -136,7 +136,10 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
       const player = players.find(p => p.id === playerId)
       if (!player) continue
       if (slotId.startsWith('bench-')) {
-        placements.push({ player_id: playerId, name: player.name, team: 'bench', position_x: null, position_y: null })
+        const benchTeam: Team = slotId.startsWith('bench-dark-') ? 'dark'
+          : slotId.startsWith('bench-light-') ? 'light'
+          : 'bench'
+        placements.push({ player_id: playerId, name: player.name, team: benchTeam, position_x: null, position_y: null })
       } else {
         const slot = slots.find(s => s.id === slotId)
         if (!slot) continue
@@ -169,33 +172,43 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
           )}
         </div>
 
-        <div className="flex gap-2">
-          {/* Left: Bench */}
-          <div className="w-14 sm:w-20 flex flex-col gap-1.5">
-            <p className="text-[9px] text-text-muted font-body uppercase tracking-wider text-center">Suplentes</p>
-            {Array.from({ length: BENCH_SLOTS }).map((_, i) => {
-              const id = `bench-${i}`
-              const player = players.find(p => p.id === assignments[id])
-              return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
-            })}
-          </div>
+        {/* Field full-width */}
+        <Field slots={slots} assignments={assignments} players={players} onUnassign={unassign} />
 
-          {/* Center: Field */}
-          <div className="flex-1 min-w-0">
-            <Field slots={slots} assignments={assignments} players={players} onUnassign={unassign} />
-          </div>
-
-          {/* Right: Confirmed players */}
-          <div className="w-20 sm:w-24 flex flex-col gap-1.5">
-            <p className="text-[9px] text-text-muted font-body uppercase tracking-wider text-center">Confirmados</p>
-            <div className="flex flex-col gap-1 overflow-y-auto no-scrollbar pr-0.5" style={{ maxHeight: '70vh' }}>
-              {unassigned.length === 0 && (
-                <p className="text-[10px] text-text-muted/60 font-body text-center py-2">Todos asignados</p>
-              )}
+        {/* Below field: either unassigned pool OR bench drop-zones per team */}
+        {unassigned.length > 0 ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-[10px] text-text-muted font-body uppercase tracking-wider">
+              Por asignar · arrastrá a la cancha
+            </p>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {unassigned.map(p => <DraggablePlayerChip key={p.id} player={p} />)}
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[10px] font-body uppercase tracking-wider text-blue-400 text-center">Suplentes Oscuro</p>
+              <div className="flex flex-col gap-1.5">
+                {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
+                  const id = `bench-dark-${i}`
+                  const player = players.find(p => p.id === assignments[id])
+                  return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
+                })}
+              </div>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-[10px] font-body uppercase tracking-wider text-slate-300 text-center">Suplentes Claro</p>
+              <div className="flex flex-col gap-1.5">
+                {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
+                  const id = `bench-light-${i}`
+                  const player = players.find(p => p.id === assignments[id])
+                  return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex gap-3 pt-1">
           <Button variant="secondary" onClick={onBack} className="flex-1">Atrás</Button>
@@ -300,7 +313,7 @@ function BenchSlot({ id, player, onUnassign }: {
     <div
       ref={setNodeRef}
       className={cn(
-        'w-full aspect-square rounded-xl border-2 border-dashed flex items-center justify-center transition-all',
+        'w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center transition-all',
         player ? 'border-transparent bg-surface' : 'border-border',
         isOver && 'border-green-light bg-green-light/15 scale-105'
       )}

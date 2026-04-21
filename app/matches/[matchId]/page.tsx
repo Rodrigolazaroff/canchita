@@ -18,7 +18,7 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
     supabase.from('profiles').select('*').eq('id', user.id).single(),
     supabase
       .from('matches')
-      .select('*, venues(*), payment_aliases(*)')
+      .select('*, venues(*), payment_aliases(*), groups(name)')
       .eq('id', params.matchId)
       .eq('user_id', user.id)
       .single(),
@@ -31,9 +31,9 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
   if (!match) redirect('/dashboard')
 
   const venueName = match.venues?.name ?? match.venue_name_override ?? 'Cancha no especificada'
-  const darkTeam  = (matchPlayers ?? []).filter(mp => mp.team === 'dark')
-  const lightTeam = (matchPlayers ?? []).filter(mp => mp.team === 'light')
-  const bench     = (matchPlayers ?? []).filter(mp => mp.team === 'bench' || !mp.team)
+  const darkTeam  = (matchPlayers ?? []).filter(mp => mp.team === 'dark' && mp.position_x !== null)
+  const lightTeam = (matchPlayers ?? []).filter(mp => mp.team === 'light' && mp.position_x !== null)
+  const bench     = (matchPlayers ?? []).filter(mp => mp.team === 'bench' || !mp.team || mp.position_x === null)
 
   return (
     <AppShell profile={profile} isAdmin={profile?.is_admin}>
@@ -128,7 +128,7 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
           <Card className="flex flex-col gap-3">
             <div className="flex items-center gap-2 text-text-secondary font-body">
               <ImageIcon size={16} className="text-text-muted flex-shrink-0" />
-              <span className="text-sm">Imagen de formación generada</span>
+              <span className="text-sm font-semibold">Formación del partido</span>
             </div>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -138,7 +138,7 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
             />
             <MatchShareButton
               shareImageUrl={match.share_image_url}
-              groupName=""
+              groupName={(match as any).groups?.name ?? ''}
             />
           </Card>
         )}
