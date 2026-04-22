@@ -27,6 +27,7 @@ La aplicación es una plataforma de gestión de partidos de fútbol amateur ("fu
 - [x] Refactorización de layout general (`AppShell.tsx`) para evitar padding innecesario en desktop.
 - [x] Refactorización de `NewMatchWizard.tsx` y `FormationBuilder.tsx` para eliminar el scroll del body.
 - [x] Alineación horizontal de inputs, unificación de etiquetas y tamaños en Paso 2 de creación de partido.
+- [x] Aplicación de formato numérico automático y unificación de estilos (Pixel Perfect) en campos de precio.
 
 ## Cicatrices (Fallos y Aprendizajes)
 - **Fallo de Columna Faltante:** El plan anterior intentó crear vistas que referenciaban `m.winner` sin haber creado la columna primero en `matches`. Se solucionó agregando un bloque `DO $$` con `ALTER TABLE`.

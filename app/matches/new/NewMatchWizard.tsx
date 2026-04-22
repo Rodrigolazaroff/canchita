@@ -288,7 +288,7 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
                     key={value}
                     onClick={() => setMatchType(value)}
                     className={cn(
-                      'flex-1 py-1.5 rounded-xl border text-sm font-body font-semibold transition-colors',
+                      'flex-1 h-12 rounded-xl border text-sm font-body font-semibold transition-colors',
                       matchType === value
                         ? 'bg-green-primary border-green-primary text-white'
                         : 'bg-surface border-border text-text-secondary hover:border-green-primary/50'
@@ -305,7 +305,6 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
               placeholder="Ej: Complejo Deportivo"
               value={venueManual}
               onChange={e => setVenueManual(e.target.value)}
-              className="h-10"
             />
 
             <div className="grid grid-cols-2 gap-3 shrink-0">
@@ -314,56 +313,62 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
                 type="date"
                 value={matchDate}
                 onChange={e => setMatchDate(e.target.value)}
-                className="h-10"
               />
-              {/* Selector de hora como listas desplegables */}
+              {/* Selector de hora como bloque sólido unificado */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm text-text-secondary font-body">Hora</label>
-                <div className="flex gap-1">
+                <div className="flex h-12 bg-surface border border-border rounded-xl px-2 items-center focus-within:border-green-primary transition-colors">
                   <select
                     value={matchTime.split(':')[0]}
                     onChange={e => setMatchTime(`${e.target.value}:${matchTime.split(':')[1]}`)}
-                    className="flex-1 h-10 bg-surface border border-border rounded-xl px-2 text-text-primary font-body focus:outline-none focus:border-green-primary text-center"
+                    className="flex-1 bg-transparent text-text-primary font-body text-center focus:outline-none appearance-none cursor-pointer no-scrollbar"
                   >
                     {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map(h => (
-                      <option key={h} value={h}>{h}</option>
+                      <option key={h} value={h} className="bg-surface text-text-primary">{h}</option>
                     ))}
                   </select>
-                  <span className="flex items-center text-text-muted font-display text-lg">:</span>
+                  <span className="text-text-muted font-display text-lg pb-1">:</span>
                   <select
                     value={matchTime.split(':')[1]}
                     onChange={e => setMatchTime(`${matchTime.split(':')[0]}:${e.target.value}`)}
-                    className="flex-1 h-10 bg-surface border border-border rounded-xl px-2 text-text-primary font-body focus:outline-none focus:border-green-primary text-center"
+                    className="flex-1 bg-transparent text-text-primary font-body text-center focus:outline-none appearance-none cursor-pointer no-scrollbar"
                   >
                     {['00', '15', '30', '45'].map(m => (
-                      <option key={m} value={m}>{m}</option>
+                      <option key={m} value={m} className="bg-surface text-text-primary">{m}</option>
                     ))}
                   </select>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 shrink-0 items-end">
+            <div className="grid grid-cols-2 gap-3 shrink-0">
               <Input
-                label="Precio total"
-                type="number"
+                label="Precio de la cancha"
+                type="text"
+                inputMode="numeric"
                 prefix="$"
-                placeholder="5000"
-                value={totalPrice}
-                onChange={e => setTotalPrice(e.target.value)}
-                className="h-10"
+                placeholder="5.000"
+                value={totalPrice ? new Intl.NumberFormat('es-AR').format(Number(totalPrice)) : ''}
+                onChange={e => setTotalPrice(e.target.value.replace(/\D/g, ''))}
               />
 
-              {priceDisplay ? (
-                <div className="h-10 bg-green-primary/10 border border-green-primary/30 rounded-xl flex items-center justify-between px-3 shadow-inner">
-                  <p className="font-body text-text-muted text-xs whitespace-nowrap">Cada uno:</p>
-                  <p className="font-display text-lg text-green-light">{priceDisplay}</p>
-                </div>
-              ) : (
-                <div className="h-10 border border-dashed border-border/30 bg-surface/30 rounded-xl flex items-center justify-center">
-                  <p className="font-body text-text-muted/50 text-xs">Cálculo por jugador</p>
-                </div>
-              )}
+              <div className="flex flex-col gap-1.5 shrink-0">
+                <label className="text-sm text-text-secondary font-body">Cada uno</label>
+                {totalPrice && selectedPlayers.length ? (
+                  <div className="h-12 bg-surface border border-border rounded-xl pl-8 pr-4 flex items-center justify-start transition-colors relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-body">
+                      $
+                    </span>
+                    <p className="font-body text-text-primary">
+                      {new Intl.NumberFormat('es-AR').format(Math.ceil(Number(totalPrice) / selectedPlayers.length))}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="h-12 bg-surface border border-dashed border-border/50 rounded-xl px-4 flex items-center justify-center transition-colors">
+                    <p className="font-body text-text-muted/50 text-sm">--</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {aliases.length > 0 && (
@@ -372,11 +377,11 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
                 <select
                   value={selectedAlias}
                   onChange={e => setSelectedAlias(e.target.value)}
-                  className="h-10 bg-surface border border-border rounded-xl px-4 text-text-primary font-body focus:outline-none focus:border-green-primary"
+                  className="w-full h-12 bg-surface border border-border rounded-xl px-4 text-text-primary font-body focus:outline-none focus:border-green-primary transition-colors appearance-none cursor-pointer no-scrollbar"
                 >
-                  <option value="">Sin alias</option>
+                  <option value="" className="bg-surface text-text-primary">Sin alias</option>
                   {aliases.map(a => (
-                    <option key={a.id} value={a.id}>{a.label} — {a.alias}</option>
+                    <option key={a.id} value={a.id} className="bg-surface text-text-primary">{a.label} — {a.alias}</option>
                   ))}
                 </select>
               </div>
