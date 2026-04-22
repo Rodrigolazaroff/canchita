@@ -10,7 +10,9 @@
       "Bash(npm run *)",
       "mcp__Claude_Preview__preview_start",
       "Bash(node -e \"const l = require\\('lucide-react'\\); console.log\\('Bandage:', !!l.Bandage, 'HeartPulse:', !!l.HeartPulse\\)\")",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
     ]
   }
 }

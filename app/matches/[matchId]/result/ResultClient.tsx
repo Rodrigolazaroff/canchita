@@ -50,10 +50,13 @@ export function ResultClient({ match, matchPlayers }: ResultClientProps) {
       attended: attended[mp.id] ?? true,
     }))
 
+    const winner = scoreDark > scoreLight ? 'dark' : scoreLight > scoreDark ? 'light' : 'draw'
+
     const [matchErr] = await Promise.all([
       supabase.from('matches').update({
         score_dark: scoreDark,
         score_light: scoreLight,
+        winner,
         status: 'played',
       }).eq('id', match.id).then(r => r.error),
       ...updates.map(u =>
