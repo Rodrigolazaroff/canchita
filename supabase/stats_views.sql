@@ -1,12 +1,11 @@
--- ─────────────────────────────────────────────────────────────────────────────
--- stats_views.sql
--- Reemplaza las vistas de estadísticas para que el frontend solo lea y muestre.
--- Ejecutar en el SQL Editor de Supabase DESPUÉS de schema.sql y metrics_schema.sql.
--- ─────────────────────────────────────────────────────────────────────────────
-
--- ─── Helper: ganador efectivo de un partido ───────────────────────────────────
--- Usa el campo `winner` si está seteado; si no, lo deriva de los scores.
--- Esto garantiza retrocompatibilidad con partidos cargados antes de esta migración.
+-- ─── 0. Migración de Esquema ──────────────────────────────────────────────────
+-- Agrega la columna winner si no existe
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='matches' AND column_name='winner') THEN
+    ALTER TABLE matches ADD COLUMN winner TEXT CHECK (winner IN ('dark', 'light', 'draw'));
+  END IF;
+END $$;
 
 -- ─── 1. Vista player_stats (reemplaza la original) ───────────────────────────
 -- Devuelve todo lo necesario para la pantalla de estadísticas: partidos jugados,

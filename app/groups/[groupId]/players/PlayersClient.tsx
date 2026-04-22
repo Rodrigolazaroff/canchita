@@ -266,7 +266,7 @@ function PlayerForm({
     <div className="flex flex-col gap-4">
       <Input
         label="Nombre"
-        placeholder="Lionel Messi"
+        placeholder="Ej: Juan Pérez"
         value={form.name}
         onChange={e => onChange({ ...form, name: e.target.value })}
         autoFocus
@@ -289,7 +289,7 @@ function PlayerForm({
       {form.isGuest && (
         <Input
           label="Referido por (opcional)"
-          placeholder="Amigo de Matías"
+          placeholder="Ej: Amigo de un amigo"
           value={form.guestLabel}
           onChange={e => onChange({ ...form, guestLabel: e.target.value })}
         />

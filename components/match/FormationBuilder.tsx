@@ -157,64 +157,70 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
       onDragStart={({ active }: DragStartEvent) => setActiveId(active.id as string)}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-col gap-3">
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-text-muted font-body">
-            {placedCount} en cancha · {unassigned.length} por asignar
-          </span>
-          {Object.keys(assignments).length > 0 && (
-            <button
-              onClick={() => setAssignments({})}
-              className="text-text-muted hover:text-red-400 font-body flex items-center gap-1 transition-colors"
-            >
-              <RotateCcw size={12} /> Limpiar todo
-            </button>
-          )}
+      <div className="flex flex-col lg:grid lg:grid-cols-[1fr,320px] gap-6 h-full">
+        <div className="flex flex-col gap-4 flex-1 min-h-0">
+          <div className="flex items-center justify-between text-xs shrink-0">
+            <span className="text-text-muted font-body">
+              {placedCount} en cancha · {unassigned.length} por asignar
+            </span>
+            {Object.keys(assignments).length > 0 && (
+              <button
+                onClick={() => setAssignments({})}
+                className="text-text-muted hover:text-red-400 font-body flex items-center gap-1 transition-colors"
+              >
+                <RotateCcw size={12} /> Limpiar todo
+              </button>
+            )}
+          </div>
+
+          {/* Field ajustado al espacio flexible */}
+          <div className="flex-1 min-h-0 flex items-center justify-center">
+            <Field slots={slots} assignments={assignments} players={players} onUnassign={unassign} />
+          </div>
+
+          <div className="flex gap-3 pt-1 shrink-0">
+            <Button variant="secondary" onClick={onBack} className="flex-1">Atrás</Button>
+            <Button onClick={handleFinish} loading={saving} className="flex-1" disabled={placedCount === 0}>
+              Generar imagen
+            </Button>
+          </div>
         </div>
 
-        {/* Field full-width */}
-        <Field slots={slots} assignments={assignments} players={players} onUnassign={unassign} />
-
-        {/* Below field: either unassigned pool OR bench drop-zones per team */}
-        {unassigned.length > 0 ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-[10px] text-text-muted font-body uppercase tracking-wider">
-              Por asignar · arrastrá a la cancha
-            </p>
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-              {unassigned.map(p => <DraggablePlayerChip key={p.id} player={p} />)}
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] font-body uppercase tracking-wider text-blue-400 text-center">Suplentes Oscuro</p>
-              <div className="flex flex-col gap-1.5">
-                {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
-                  const id = `bench-dark-${i}`
-                  const player = players.find(p => p.id === assignments[id])
-                  return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
-                })}
+        {/* Side column con scroll propio */}
+        <div className="flex flex-col gap-4 lg:overflow-y-auto lg:pr-2 lg:pb-2 no-scrollbar">
+          {unassigned.length > 0 ? (
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-body font-semibold uppercase tracking-widest text-text-muted">
+                Por asignar
+              </p>
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
+                {unassigned.map(p => <DraggablePlayerChip key={p.id} player={p} />)}
               </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <p className="text-[10px] font-body uppercase tracking-wider text-slate-300 text-center">Suplentes Claro</p>
-              <div className="flex flex-col gap-1.5">
-                {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
-                  const id = `bench-light-${i}`
-                  const player = players.find(p => p.id === assignments[id])
-                  return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
-                })}
+          ) : (
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-3">
+                <p className="text-xs font-body font-semibold uppercase tracking-widest text-blue-400 border-b border-blue-400/20 pb-1">Suplentes Oscuro</p>
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
+                    const id = `bench-dark-${i}`
+                    const player = players.find(p => p.id === assignments[id])
+                    return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
+                  })}
+                </div>
+              </div>
+              <div className="flex flex-col gap-3">
+                <p className="text-xs font-body font-semibold uppercase tracking-widest text-slate-300 border-b border-slate-300/20 pb-1">Suplentes Claro</p>
+                <div className="flex flex-col gap-2">
+                  {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
+                    const id = `bench-light-${i}`
+                    const player = players.find(p => p.id === assignments[id])
+                    return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        )}
-
-        <div className="flex gap-3 pt-1">
-          <Button variant="secondary" onClick={onBack} className="flex-1">Atrás</Button>
-          <Button onClick={handleFinish} loading={saving} className="flex-1" disabled={placedCount === 0}>
-            Generar imagen
-          </Button>
+          )}
         </div>
       </div>
 
@@ -226,6 +232,7 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
         )}
       </DragOverlay>
     </DndContext>
+
   )
 }
 
@@ -236,7 +243,7 @@ function Field({ slots, assignments, players, onUnassign }: {
   onUnassign: (playerId: string) => void
 }) {
   return (
-    <div className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: '7/10', background: '#0d2a18' }}>
+    <div className="relative mx-auto w-full max-w-md lg:max-w-none lg:w-auto lg:h-[70vh] rounded-xl overflow-hidden shadow-2xl border border-border" style={{ aspectRatio: '7/10', background: '#0d2a18' }}>
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 70 100" fill="none" preserveAspectRatio="none">
         <rect x="2" y="2" width="66" height="96" stroke="#2d6a40" strokeWidth="0.8" rx="1.5"/>
         <line x1="2" y1="50" x2="68" y2="50" stroke="#2d6a40" strokeWidth="0.5" strokeDasharray="2 1.5"/>
@@ -245,10 +252,10 @@ function Field({ slots, assignments, players, onUnassign }: {
         <rect x="17" y="88" width="36" height="10" stroke="#2d6a40" strokeWidth="0.5"/>
       </svg>
       <div className="absolute top-1 left-0 right-0 text-center pointer-events-none">
-        <span className="text-[9px] font-body text-blue-400/40 uppercase tracking-widest">Oscuro</span>
+        <span className="text-[10px] font-body text-blue-400/40 uppercase tracking-widest font-bold">Oscuro</span>
       </div>
       <div className="absolute bottom-1 left-0 right-0 text-center pointer-events-none">
-        <span className="text-[9px] font-body text-text-primary/30 uppercase tracking-widest">Claro</span>
+        <span className="text-[10px] font-body text-text-primary/30 uppercase tracking-widest font-bold">Claro</span>
       </div>
       {slots.map(slot => {
         const player = players.find(p => p.id === assignments[slot.id])
@@ -276,25 +283,33 @@ function FieldSlot({ slot, player, onUnassign }: {
   return (
     <div
       ref={setNodeRef}
-      className="absolute -translate-x-1/2 -translate-y-1/2"
+      className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-1"
       style={{ left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }}
     >
       {player ? (
-        <button
-          onClick={onUnassign}
-          className={cn(
-            'group relative w-9 h-9 sm:w-10 sm:h-10 rounded-full border flex items-center justify-center text-[9px] sm:text-[10px] font-bold hover:scale-110 transition-transform shadow-lg cursor-pointer',
-            isDark ? 'bg-[#1e3a5f] text-blue-200 border-blue-300/50' : 'bg-[#f0fdf4] text-bg border-bg/30'
-          )}
-        >
-          {initials(player.name)}
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex">
-            <X size={9} />
+        <div className="flex flex-col items-center">
+          <button
+            onClick={onUnassign}
+            className={cn(
+              'group relative w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-[10px] sm:text-[11px] font-bold hover:scale-110 transition-transform shadow-lg cursor-pointer',
+              isDark ? 'bg-black text-white border-white' : 'bg-white text-black border-black'
+            )}
+          >
+            {initials(player.name)}
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex">
+              <X size={10} />
+            </span>
+          </button>
+          <span className={cn(
+            'text-[9px] sm:text-[10px] font-body font-semibold truncate max-w-[60px] sm:max-w-[75px] text-center mt-0.5 px-1 rounded shadow-sm',
+            isDark ? 'text-blue-100 bg-blue-900/60' : 'text-bg bg-white/80'
+          )}>
+            {player.name}
           </span>
-        </button>
+        </div>
       ) : (
         <div className={cn(
-          'w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 border-dashed transition-all',
+          'w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-dashed transition-all',
           isDark ? 'border-blue-300/20' : 'border-white/20',
           isOver && 'border-green-light bg-green-light/15 scale-110'
         )} />
@@ -313,16 +328,17 @@ function BenchSlot({ id, player, onUnassign }: {
     <div
       ref={setNodeRef}
       className={cn(
-        'w-full h-14 rounded-xl border-2 border-dashed flex items-center justify-center transition-all',
-        player ? 'border-transparent bg-surface' : 'border-border',
+        'w-full h-16 rounded-xl border-2 border-dashed flex items-center justify-center transition-all',
+        player ? 'border-transparent bg-surface shadow-sm' : 'border-border',
         isOver && 'border-green-light bg-green-light/15 scale-105'
       )}
     >
       {player && (
-        <button onClick={onUnassign} className="flex items-center justify-center group relative">
-          <PlayerAvatar name={player.name} id={player.id} photoUrl={player.photo_url} size={32} />
-          <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex">
-            <X size={9} />
+        <button onClick={onUnassign} className="flex items-center justify-center group relative w-full h-full px-2 gap-2">
+          <PlayerAvatar name={player.name} id={player.id} photoUrl={player.photo_url} size={36} />
+          <span className="text-sm font-body font-semibold text-text-primary truncate flex-1 text-left">{player.name}</span>
+          <span className="w-6 h-6 rounded-full bg-red-500/20 text-red-500 items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity flex">
+            <X size={14} />
           </span>
         </button>
       )}
@@ -338,16 +354,16 @@ function DraggablePlayerChip({ player }: { player: Player }) {
       {...attributes}
       {...listeners}
       className={cn(
-        'flex items-center gap-1.5 px-2 py-1 bg-surface border border-border rounded-full cursor-grab active:cursor-grabbing select-none hover:border-green-primary/40 transition-colors',
+        'flex items-center gap-2.5 px-3 py-2.5 bg-surface border border-border rounded-xl cursor-grab active:cursor-grabbing select-none hover:border-green-primary/40 transition-colors shadow-sm',
         isDragging && 'opacity-30'
       )}
       // touch-action:none es OBLIGATORIO en mobile para que dnd-kit capture
       // el touch antes de que el browser lo interprete como scroll
       style={{ transform: CSS.Translate.toString(transform), touchAction: 'none' }}
     >
-      <PlayerAvatar name={player.name} id={player.id} photoUrl={player.photo_url} size={22} />
-      <span className="text-[11px] font-body text-text-primary truncate">
-        {player.name.split(' ')[0]}
+      <PlayerAvatar name={player.name} id={player.id} photoUrl={player.photo_url} size={28} />
+      <span className="text-sm font-body font-semibold text-text-primary truncate flex-1">
+        {player.name}
       </span>
     </div>
   )

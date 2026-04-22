@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/layout/AppShell'
-import { formatDate, formatTime } from '@/lib/utils/format'
+import { formatDate, formatTime, cn } from '@/lib/utils/format'
 import { Calendar, MapPin, Users, DollarSign, Image as ImageIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -145,8 +145,11 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
 
         {/* Acciones */}
         {match.status === 'scheduled' && (
-          <Link href={`/matches/${params.matchId}/result`}>
-            <Button className="w-full">Cargar resultado</Button>
+          <Link 
+            href={`/matches/${params.matchId}/result`}
+            className="inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95 bg-green-primary text-white hover:bg-green-600 h-11 px-5 text-base gap-2 w-full"
+          >
+            Cargar resultado
           </Link>
         )}
       </div>

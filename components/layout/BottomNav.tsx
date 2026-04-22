@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Plus, Clock, User, BarChart2 } from 'lucide-react'
@@ -16,6 +17,10 @@ const navItems = [
 export function BottomNav() {
   const pathname = usePathname()
   const activeGroup = useGroupStore(s => s.activeGroup())
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted) return <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border md:hidden h-16" />
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border md:hidden">

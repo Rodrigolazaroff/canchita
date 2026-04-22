@@ -124,9 +124,9 @@ export function AdminClient({ stats, venues: initial }: AdminClientProps) {
 
       <Modal open={open} onClose={() => setOpen(false)} title={editing ? 'Editar cancha' : 'Nueva cancha'}>
         <div className="flex flex-col gap-4">
-          <Input label="Nombre" placeholder="Club Atlético Norte" value={name} onChange={e => setName(e.target.value)} autoFocus />
-          <Input label="Dirección (opcional)" placeholder="Av. San Martín 1200" value={address} onChange={e => setAddress(e.target.value)} />
-          <Input label="Ciudad" placeholder="Buenos Aires" value={city} onChange={e => setCity(e.target.value)} />
+          <Input label="Nombre" placeholder="Ej: Complejo Central" value={name} onChange={e => setName(e.target.value)} autoFocus />
+          <Input label="Dirección (opcional)" placeholder="Ej: Av. Principal 123" value={address} onChange={e => setAddress(e.target.value)} />
+          <Input label="Ciudad" placeholder="Ej: Buenos Aires" value={city} onChange={e => setCity(e.target.value)} />
           <Button onClick={handleSave} loading={loading} disabled={!name.trim()} className="w-full">
             {editing ? 'Guardar cambios' : 'Agregar cancha'}
           </Button>

@@ -76,7 +76,7 @@ export function OnboardingWizard({ userId, isNewGroup }: OnboardingWizardProps) 
               <p className="text-text-muted font-body text-sm">El nombre con el que lo conocen todos</p>
             </div>
             <Input
-              placeholder="Los Cracks del Jueves"
+              placeholder="Ej: Los Cracks de los Martes"
               value={name}
               onChange={e => setName(e.target.value.slice(0, 30))}
               maxLength={30}

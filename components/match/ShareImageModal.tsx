@@ -191,7 +191,7 @@ export function ShareImageModal({
       const isDark = p.team === 'dark'
       const R = 32
 
-      // Colores por equipo — puros, sin transparencia
+      // Colores por equipo — puros y sólidos
       const fillColor   = isDark ? '#000000' : '#ffffff'
       const strokeColor = isDark ? '#ffffff' : '#000000'
       const textColor   = isDark ? '#ffffff' : '#000000'
@@ -202,30 +202,34 @@ export function ShareImageModal({
       ctx.arc(px, py, R, 0, Math.PI * 2)
       ctx.fill()
 
-      // Borde de contraste (grueso)
+      // Borde de contraste (grueso y sólido)
       ctx.strokeStyle = strokeColor
-      ctx.lineWidth = 4
+      ctx.lineWidth = 5
       ctx.stroke()
 
       // Iniciales adentro
       ctx.fillStyle = textColor
-      ctx.font = 'bold 22px sans-serif'
+      ctx.font = 'bold 24px sans-serif'
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText(initials(p.name), px, py)
       ctx.textBaseline = 'alphabetic'
 
       // Badge con nombre completo
-      ctx.font = '13px sans-serif'
+      ctx.font = 'bold 14px sans-serif'
       const nameText = p.name
-      const tw = Math.min(ctx.measureText(nameText).width + 14, 150)
+      const tw = Math.min(ctx.measureText(nameText).width + 16, 160)
 
-      ctx.fillStyle = 'rgba(0,0,0,0.72)'
-      ctx.roundRect(px - tw / 2, py + R + 4, tw, 20, 5)
+      ctx.fillStyle = fillColor // Fondo igual al círculo para consistencia
+      ctx.strokeStyle = strokeColor
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.roundRect(px - tw / 2, py + R + 4, tw, 22, 6)
       ctx.fill()
+      ctx.stroke()
 
-      ctx.fillStyle = '#f0fdf4'
-      ctx.fillText(nameText, px, py + R + 18)
+      ctx.fillStyle = textColor
+      ctx.fillText(nameText, px, py + R + 19)
     }
 
     ctx.restore()
@@ -322,22 +326,24 @@ export function ShareImageModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="¡Listo para compartir!" className="max-w-sm" disableBackdropClose>
+    <Modal open={open} onClose={onClose} title="¡Listo para compartir!" className="max-w-md sm:max-w-lg" disableBackdropClose>
       <canvas ref={canvasRef} className="hidden" />
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 max-h-[75vh]">
         {imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={imageUrl}
-            alt="Formación"
-            className="w-full rounded-xl border border-border"
-          />
+          <div className="flex-1 min-h-0 overflow-hidden rounded-xl border border-border">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt="Formación"
+              className="w-full h-full object-contain"
+            />
+          </div>
         ) : (
           <div className="w-full bg-border rounded-xl animate-pulse flex items-center justify-center" style={{ aspectRatio: '1080/1280' }}>
             <p className="text-text-muted font-body">Generando imagen...</p>
           </div>
         )}
-        <div className="flex gap-3">
+        <div className="flex gap-3 mt-auto">
           <Button
             variant="secondary"
             onClick={handleDownload}

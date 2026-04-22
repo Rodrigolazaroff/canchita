@@ -1,4 +1,5 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Home, Plus, Clock, User, Settings, Shield, BarChart2 } from 'lucide-react'
@@ -21,6 +22,18 @@ interface SidebarProps {
 export function Sidebar({ isAdmin }: SidebarProps) {
   const pathname = usePathname()
   const activeGroup = useGroupStore(s => s.activeGroup())
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
+
+  if (!mounted) {
+    return (
+      <aside className="hidden md:flex flex-col w-56 bg-surface border-r border-border min-h-screen fixed top-0 left-0 z-40 p-4 gap-1">
+        <div className="mb-6 px-2">
+          <span className="font-display text-2xl text-green-light tracking-wider">CANCHITA</span>
+        </div>
+      </aside>
+    )
+  }
 
   return (
     <aside className="hidden md:flex flex-col w-56 bg-surface border-r border-border min-h-screen fixed top-0 left-0 z-40 p-4 gap-1">
