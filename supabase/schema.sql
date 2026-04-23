@@ -36,7 +36,7 @@ CREATE TABLE groups (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
-  day_of_week INT CHECK (day_of_week BETWEEN 0 AND 6),
+  days_of_week INT[],
   match_type TEXT CHECK (match_type IN ('futbol5', 'futbol8', 'futbol11')),
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()

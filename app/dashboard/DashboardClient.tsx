@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
 import { MatchCardSkeleton } from '@/components/ui/Skeleton'
-import { formatDate, formatTime, formatDayOfWeek, pricePerPlayer, cn } from '@/lib/utils/format'
+import { formatDate, formatTime, formatDayOfWeek, closestUpcomingDay, pricePerPlayer, cn } from '@/lib/utils/format'
 import Link from 'next/link'
 import { Calendar, MapPin, Users, Plus, ChevronRight } from 'lucide-react'
 import type { Group, Match, PlayerStats, Profile } from '@/lib/types'
@@ -122,7 +122,7 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
               </div>
               <div className="text-center">
                 <p className="font-body text-text-secondary">No hay partido programado</p>
-                <p suppressHydrationWarning className="text-sm text-text-muted font-body mt-1">¿Organizamos el de este {group.day_of_week !== null ? formatDayOfWeek(group.day_of_week) : 'fin de semana'}?</p>
+                <p suppressHydrationWarning className="text-sm text-text-muted font-body mt-1">¿Organizamos el de este {(group.days_of_week && group.days_of_week.length > 0) ? formatDayOfWeek(closestUpcomingDay(group.days_of_week)) : 'fin de semana'}?</p>
               </div>
               <Link 
                 href="/matches/new"

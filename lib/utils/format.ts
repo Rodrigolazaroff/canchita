@@ -23,15 +23,49 @@ export function formatTime(time: string): string {
 }
 
 const DAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
-export function formatDayOfWeek(day: number): string {
-  return DAYS[day] ?? ''
+
+export function formatDayOfWeek(days: number[] | number): string {
+  const arr = Array.isArray(days) ? [...days].sort((a, b) => a - b) : [days]
+  if (arr.length === 0) return ''
+  if (arr.length === 1) return DAYS[arr[0]] ?? ''
+  
+  const last = arr.pop()!
+  return `${arr.map(d => DAYS[d]).join(', ')} y ${DAYS[last]}`
 }
 
-export function nextOccurrenceOf(dayOfWeek: number): string {
+export function closestUpcomingDay(daysOfWeek: number[]): number {
+  if (!daysOfWeek || daysOfWeek.length === 0) return new Date().getDay()
+  const currentDay = new Date().getDay()
+  
+  let minDiff = 7
+  let closestDay = daysOfWeek[0]
+  for (const day of daysOfWeek) {
+    const diff = (day - currentDay + 7) % 7 || 7
+    if (diff < minDiff) {
+      minDiff = diff
+      closestDay = day
+    }
+  }
+  return closestDay
+}
+
+export function nextOccurrenceOf(daysOfWeek: number[] | number): string {
+  const days = Array.isArray(daysOfWeek) ? daysOfWeek : [daysOfWeek]
+  if (days.length === 0) return new Date().toISOString().split('T')[0]
+  
   const today = new Date()
-  const diff = (dayOfWeek - today.getDay() + 7) % 7 || 7
+  const currentDay = today.getDay()
+  
+  let minDiff = 7
+  for (const day of days) {
+    const diff = (day - currentDay + 7) % 7 || 7
+    if (diff < minDiff) {
+      minDiff = diff
+    }
+  }
+  
   const next = new Date(today)
-  next.setDate(today.getDate() + diff)
+  next.setDate(today.getDate() + minDiff)
   return next.toISOString().split('T')[0]
 }
 

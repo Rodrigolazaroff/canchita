@@ -39,7 +39,7 @@ export function GroupSettingsModal({
 
   // — Campos de edición —
   const [name, setName]           = useState(group.name)
-  const [dayOfWeek, setDayOfWeek] = useState<number | null>(group.day_of_week)
+  const [daysOfWeek, setDaysOfWeek] = useState<number[]>(group.days_of_week || [])
   const [matchType, setMatchType] = useState<MatchType | null>(group.match_type)
   const [saving, setSaving]       = useState(false)
 
@@ -47,7 +47,7 @@ export function GroupSettingsModal({
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [deleting, setDeleting]           = useState(false)
 
-  const canSave  = name.trim().length > 0 && dayOfWeek !== null && matchType !== null
+  const canSave  = name.trim().length > 0 && daysOfWeek.length > 0 && matchType !== null
   const canDelete = deleteConfirm.trim().toLowerCase() === group.name.trim().toLowerCase()
 
   async function handleSave() {
@@ -57,7 +57,7 @@ export function GroupSettingsModal({
 
     const { data, error } = await supabase
       .from('groups')
-      .update({ name: name.trim(), day_of_week: dayOfWeek, match_type: matchType })
+      .update({ name: name.trim(), days_of_week: daysOfWeek, match_type: matchType })
       .eq('id', group.id)
       .select()
       .single()
@@ -93,7 +93,7 @@ export function GroupSettingsModal({
     // Resetear estado al cerrar
     setTab('edit')
     setName(group.name)
-    setDayOfWeek(group.day_of_week)
+    setDaysOfWeek(group.days_of_week || [])
     setMatchType(group.match_type)
     setDeleteConfirm('')
     onClose()
@@ -141,15 +141,15 @@ export function GroupSettingsModal({
 
           {/* Día de semana */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm text-text-secondary font-body">Día habitual</label>
+            <label className="text-sm text-text-secondary font-body">Días habituales</label>
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
               {DAYS.map((day, i) => (
                 <button
                   key={i}
-                  onClick={() => setDayOfWeek(i)}
+                  onClick={() => setDaysOfWeek(prev => prev.includes(i) ? prev.filter(d => d !== i) : [...prev, i])}
                   className={cn(
                     'flex-shrink-0 w-11 h-11 rounded-xl font-body text-sm font-semibold transition-all',
-                    dayOfWeek === i
+                    daysOfWeek.includes(i)
                       ? 'bg-green-primary text-white shadow-lg shadow-green-primary/30'
                       : 'bg-bg border border-border text-text-secondary hover:border-green-primary/50'
                   )}

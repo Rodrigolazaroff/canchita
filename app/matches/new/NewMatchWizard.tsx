@@ -57,7 +57,7 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
   const [venueManual, setVenueManual] = useState('')
   const [matchType, setMatchType] = useState<MatchType>(group?.match_type ?? 'futbol5')
   const [matchDate, setMatchDate] = useState(
-    group?.day_of_week != null ? nextOccurrenceOf(group.day_of_week) : new Date().toISOString().split('T')[0]
+    (group?.days_of_week && group.days_of_week.length > 0) ? nextOccurrenceOf(group.days_of_week) : new Date().toISOString().split('T')[0]
   )
   const [matchTime, setMatchTime] = useState('21:00')
   const [totalPrice, setTotalPrice] = useState('')

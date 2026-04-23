@@ -25,12 +25,12 @@ export function OnboardingWizard({ userId, isNewGroup }: OnboardingWizardProps) 
   const router = useRouter()
   const [step, setStep] = useState(0)
   const [name, setName] = useState('')
-  const [dayOfWeek, setDayOfWeek] = useState<number | null>(null)
+  const [daysOfWeek, setDaysOfWeek] = useState<number[]>([])
   const [matchType, setMatchType] = useState<MatchType | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit() {
-    if (!name.trim() || dayOfWeek === null || !matchType) return
+    if (!name.trim() || daysOfWeek.length === 0 || !matchType) return
     setLoading(true)
     const supabase = createClient()
 
@@ -39,7 +39,7 @@ export function OnboardingWizard({ userId, isNewGroup }: OnboardingWizardProps) 
 
     const { error } = await supabase
       .from('groups')
-      .insert({ user_id: userId, name: name.trim(), day_of_week: dayOfWeek, match_type: matchType })
+      .insert({ user_id: userId, name: name.trim(), days_of_week: daysOfWeek, match_type: matchType })
       .select()
       .single()
 
@@ -90,16 +90,16 @@ export function OnboardingWizard({ userId, isNewGroup }: OnboardingWizardProps) 
           <div className="flex flex-col gap-4">
             <div>
               <h2 className="font-display text-2xl text-text-primary mb-1">¿Qué día juegan?</h2>
-              <p className="text-text-muted font-body text-sm">El día habitual de partido</p>
+              <p className="text-text-muted font-body text-sm">Los días habituales de partido</p>
             </div>
             <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
               {DAYS.map((day, i) => (
                 <button
                   key={i}
-                  onClick={() => setDayOfWeek(i)}
+                  onClick={() => setDaysOfWeek(prev => prev.includes(i) ? prev.filter(d => d !== i) : [...prev, i])}
                   className={cn(
                     'flex-shrink-0 w-12 h-12 rounded-xl font-body text-sm font-semibold transition-all',
-                    dayOfWeek === i
+                    daysOfWeek.includes(i)
                       ? 'bg-green-primary text-white shadow-lg shadow-green-primary/30'
                       : 'bg-surface border border-border text-text-secondary hover:border-green-primary/50'
                   )}
@@ -161,7 +161,7 @@ export function OnboardingWizard({ userId, isNewGroup }: OnboardingWizardProps) 
             className="flex-1"
             disabled={
               (step === 0 && !name.trim()) ||
-              (step === 1 && dayOfWeek === null)
+              (step === 1 && daysOfWeek.length === 0)
             }
           >
             Siguiente

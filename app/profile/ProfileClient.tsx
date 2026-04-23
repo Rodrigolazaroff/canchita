@@ -62,7 +62,7 @@ export function ProfileClient({ profile, groups }: ProfileClientProps) {
                 <div className="flex-1">
                   <p className="font-body font-semibold text-text-primary">{g.name}</p>
                   <p className="text-xs text-text-muted font-body">
-                    {g.day_of_week !== null && formatDayOfWeek(g.day_of_week)}
+                    {(g.days_of_week && g.days_of_week.length > 0) && formatDayOfWeek(g.days_of_week)}
                     {g.match_type && ` · ${MATCH_TYPE_LABEL[g.match_type]}`}
                   </p>
                 </div>
