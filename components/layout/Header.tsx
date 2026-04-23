@@ -123,6 +123,7 @@ export function Header({ profile }: HeaderProps) {
       {/* Modal de configuración */}
       {current && (
         <GroupSettingsModal
+          key={current.id}
           group={current}
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}

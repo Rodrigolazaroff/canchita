@@ -30,6 +30,7 @@ La aplicación es una plataforma de gestión de partidos de fútbol amateur ("fu
 - [x] Aplicación de formato numérico automático y unificación de estilos (Pixel Perfect) en campos de precio.
 - [x] Refactorización completa de Grupos para soportar selección múltiple de días habituales (`days_of_week`).
 - [x] Refactorización del layout de "Días habituales" reemplazando anchos fijos y overflow horizontal por un sistema `grid-cols-7` para lograr una distribución perfectamente simétrica.
+- [x] Corrección de bug crítico en el Modal de Grupos que mantenía caché del estado anterior y sobreescribía los nombres al cambiar de grupo activo.
 
 ## Cicatrices (Fallos y Aprendizajes)
 - **Fallo de Columna Faltante:** El plan anterior intentó crear vistas que referenciaban `m.winner` sin haber creado la columna primero en `matches`. Se solucionó agregando un bloque `DO $$` con `ALTER TABLE`.
