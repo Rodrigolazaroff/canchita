@@ -142,13 +142,13 @@ export function GroupSettingsModal({
           {/* Día de semana */}
           <div className="flex flex-col gap-1.5">
             <label className="text-sm text-text-secondary font-body">Días habituales</label>
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <div className="grid grid-cols-7 gap-1.5 w-full py-0.5">
               {DAYS.map((day, i) => (
                 <button
                   key={i}
                   onClick={() => setDaysOfWeek(prev => prev.includes(i) ? prev.filter(d => d !== i) : [...prev, i])}
                   className={cn(
-                    'flex-shrink-0 w-11 h-11 rounded-xl font-body text-sm font-semibold transition-all',
+                    'flex items-center justify-center w-full h-11 rounded-xl font-body text-sm font-semibold transition-all',
                     daysOfWeek.includes(i)
                       ? 'bg-green-primary text-white shadow-lg shadow-green-primary/30'
                       : 'bg-bg border border-border text-text-secondary hover:border-green-primary/50'

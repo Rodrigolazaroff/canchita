@@ -92,13 +92,13 @@ export function OnboardingWizard({ userId, isNewGroup }: OnboardingWizardProps) 
               <h2 className="font-display text-2xl text-text-primary mb-1">¿Qué día juegan?</h2>
               <p className="text-text-muted font-body text-sm">Los días habituales de partido</p>
             </div>
-            <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+            <div className="grid grid-cols-7 gap-1.5 w-full py-1">
               {DAYS.map((day, i) => (
                 <button
                   key={i}
                   onClick={() => setDaysOfWeek(prev => prev.includes(i) ? prev.filter(d => d !== i) : [...prev, i])}
                   className={cn(
-                    'flex-shrink-0 w-12 h-12 rounded-xl font-body text-sm font-semibold transition-all',
+                    'flex items-center justify-center w-full h-12 rounded-xl font-body text-sm font-semibold transition-all',
                     daysOfWeek.includes(i)
                       ? 'bg-green-primary text-white shadow-lg shadow-green-primary/30'
                       : 'bg-surface border border-border text-text-secondary hover:border-green-primary/50'

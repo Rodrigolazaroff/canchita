@@ -29,6 +29,7 @@ La aplicación es una plataforma de gestión de partidos de fútbol amateur ("fu
 - [x] Alineación horizontal de inputs, unificación de etiquetas y tamaños en Paso 2 de creación de partido.
 - [x] Aplicación de formato numérico automático y unificación de estilos (Pixel Perfect) en campos de precio.
 - [x] Refactorización completa de Grupos para soportar selección múltiple de días habituales (`days_of_week`).
+- [x] Refactorización del layout de "Días habituales" reemplazando anchos fijos y overflow horizontal por un sistema `grid-cols-7` para lograr una distribución perfectamente simétrica.
 
 ## Cicatrices (Fallos y Aprendizajes)
 - **Fallo de Columna Faltante:** El plan anterior intentó crear vistas que referenciaban `m.winner` sin haber creado la columna primero en `matches`. Se solucionó agregando un bloque `DO $$` con `ALTER TABLE`.
