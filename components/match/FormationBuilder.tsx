@@ -191,36 +191,36 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
       onDragStart={({ active }: DragStartEvent) => setActiveId(active.id as string)}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex flex-col lg:grid lg:grid-cols-[1fr,320px] gap-6 h-full">
-        <div className="flex flex-col gap-4 flex-1 min-h-0">
-          <div className="flex items-center justify-between text-xs shrink-0">
+      {/* ── Layout desktop: dos columnas ── mobile: scroll vertical con botones fijos abajo */}
+      <div className="lg:grid lg:grid-cols-[1fr,320px] lg:gap-6 lg:h-full flex flex-col">
+
+        {/* Columna izquierda / contenido principal */}
+        <div className="flex flex-col gap-3 lg:flex-1 lg:min-h-0">
+
+          {/* Barra de estado */}
+          <div className="flex items-center justify-between text-xs">
             <span className="text-text-muted font-body">
               {placedCount} en cancha · {unassigned.length} por asignar
             </span>
             <div className="flex items-center gap-3">
-              <button
-                onClick={randomize}
-                className="text-green-light hover:text-green-400 font-body flex items-center gap-1 transition-colors"
-              >
+              <button onClick={randomize} className="text-green-light font-body flex items-center gap-1">
                 <Shuffle size={12} /> Aleatorizar
               </button>
               {Object.keys(assignments).length > 0 && (
-                <button
-                  onClick={() => setAssignments({})}
-                  className="text-text-muted hover:text-red-400 font-body flex items-center gap-1 transition-colors"
-                >
+                <button onClick={() => setAssignments({})} className="text-text-muted hover:text-red-400 font-body flex items-center gap-1">
                   <RotateCcw size={12} /> Limpiar
                 </button>
               )}
             </div>
           </div>
 
-          {/* Field ajustado al espacio flexible */}
-          <div className="flex-1 min-h-0 flex items-center justify-center">
+          {/* Campo — en mobile tiene aspect-ratio fijo, en desktop llena el espacio */}
+          <div className="lg:flex-1 lg:min-h-0 lg:flex lg:items-center lg:justify-center">
             <Field slots={slots} assignments={assignments} players={players} onUnassign={unassign} />
           </div>
 
-          <div className="flex gap-3 pt-1 shrink-0">
+          {/* Botones — en desktop van aquí, en mobile van fijos al final */}
+          <div className="hidden lg:flex gap-3 pt-1">
             <Button variant="secondary" onClick={onBack} className="flex-1">Atrás</Button>
             <Button onClick={handleFinish} loading={saving} className="flex-1" disabled={placedCount === 0}>
               Generar imagen
@@ -228,8 +228,8 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
           </div>
         </div>
 
-        {/* Side column con scroll propio */}
-        <div className="flex flex-col gap-4 lg:overflow-y-auto lg:pr-2 lg:pb-2 no-scrollbar">
+        {/* Side column / panel de jugadores */}
+        <div className="flex flex-col gap-4 lg:overflow-y-auto lg:pr-2 lg:pb-2 no-scrollbar mt-3 lg:mt-0">
           {/* Jugadores sin asignar — siempre visible si hay */}
           {unassigned.length > 0 && (
             <div className="flex flex-col gap-3">
@@ -266,6 +266,14 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
             </div>
           </div>
         </div>
+
+        {/* Botones fijos en mobile al fondo */}
+        <div className="lg:hidden flex gap-3 pt-3 pb-2 sticky bottom-0 bg-bg">
+          <Button variant="secondary" onClick={onBack} className="flex-1">Atrás</Button>
+          <Button onClick={handleFinish} loading={saving} className="flex-1" disabled={placedCount === 0}>
+            Generar imagen
+          </Button>
+        </div>
       </div>
 
       <DragOverlay dropAnimation={null}>
@@ -287,7 +295,7 @@ function Field({ slots, assignments, players, onUnassign }: {
   onUnassign: (playerId: string) => void
 }) {
   return (
-    <div className="relative mx-auto w-full max-w-md lg:max-w-none lg:w-auto lg:h-[70vh] rounded-xl overflow-hidden shadow-2xl border border-border" style={{ aspectRatio: '7/10', background: '#0d2a18' }}>
+    <div className="relative mx-auto w-full max-w-sm lg:max-w-none lg:w-auto lg:h-[70vh] rounded-xl overflow-hidden shadow-2xl border border-border" style={{ aspectRatio: '7/10', background: '#0d2a18' }}>
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 70 100" fill="none" preserveAspectRatio="none">
         <rect x="2" y="2" width="66" height="96" stroke="#2d6a40" strokeWidth="0.8" rx="1.5"/>
         <line x1="2" y1="50" x2="68" y2="50" stroke="#2d6a40" strokeWidth="0.5" strokeDasharray="2 1.5"/>
