@@ -37,7 +37,7 @@ export function MatchActions({ matchId }: MatchActionsProps) {
   return (
     <div className="flex items-center gap-1">
       <Link href={`/matches/${matchId}/edit`}>
-        <Button variant="ghost" size="icon" className="text-text-muted hover:text-text-primary h-9 w-9">
+        <Button variant="ghost" size="sm" className="text-text-muted hover:text-text-primary h-9 w-9">
           <Pencil size={18} />
         </Button>
       </Link>
@@ -45,7 +45,7 @@ export function MatchActions({ matchId }: MatchActionsProps) {
       {!showConfirm ? (
         <Button 
           variant="ghost" 
-          size="icon" 
+          size="sm" 
           className="text-text-muted hover:text-red-400 h-9 w-9"
           onClick={() => setShowConfirm(true)}
         >
