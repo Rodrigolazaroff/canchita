@@ -10,9 +10,10 @@ import type { Profile, Group } from '@/lib/types'
 
 interface HeaderProps {
   profile: Profile | null
+  displayName?: string
 }
 
-export function Header({ profile }: HeaderProps) {
+export function Header({ profile, displayName }: HeaderProps) {
   const { groups, activeGroupId, setActiveGroup, activeGroup, setGroups } = useGroupStore()
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -111,7 +112,7 @@ export function Header({ profile }: HeaderProps) {
         {profile && (
           <Link href="/profile">
             <PlayerAvatar
-              name={profile.full_name ?? 'U'}
+              name={displayName || profile.full_name || 'U'}
               id={profile.id}
               photoUrl={profile.avatar_url}
               size={36}

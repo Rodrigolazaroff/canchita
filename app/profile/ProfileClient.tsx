@@ -12,9 +12,13 @@ import type { Profile, Group } from '@/lib/types'
 interface ProfileClientProps {
   profile: Profile | null
   groups: Group[]
+  userEmail: string
+  userMeta: Record<string, any>
 }
 
-export function ProfileClient({ profile, groups }: ProfileClientProps) {
+export function ProfileClient({ profile, groups, userEmail, userMeta }: ProfileClientProps) {
+  // Nombre: profile.full_name > user_metadata.full_name > user_metadata.name > email
+  const displayName = profile?.full_name || userMeta?.full_name || userMeta?.name || userEmail.split('@')[0]
   const router = useRouter()
 
   async function handleLogout() {
@@ -35,14 +39,14 @@ export function ProfileClient({ profile, groups }: ProfileClientProps) {
       {/* Profile header */}
       <div className="flex flex-col items-center gap-3 py-4">
         <PlayerAvatar
-          name={profile?.full_name ?? 'U'}
+          name={displayName}
           id={profile?.id ?? '0'}
           photoUrl={profile?.avatar_url}
           size={80}
         />
         <div className="text-center">
-          <h1 className="font-display text-2xl text-text-primary">{profile?.full_name ?? 'Organizador'}</h1>
-          <p className="text-text-muted font-body text-sm">Organizador</p>
+          <h1 className="font-display text-2xl text-text-primary">{displayName}</h1>
+          <p className="text-text-muted font-body text-sm">{userEmail}</p>
         </div>
       </div>
 
@@ -79,7 +83,7 @@ export function ProfileClient({ profile, groups }: ProfileClientProps) {
         <Link href="/settings/aliases">
           <Card className="flex items-center gap-3 hover:border-green-primary/30 transition-colors">
             <Settings size={18} className="text-text-muted" />
-            <span className="flex-1 font-body text-text-primary">Aliases de pago</span>
+            <span className="flex-1 font-body text-text-primary">Alias de Pago</span>
             <ChevronRight size={16} className="text-text-muted" />
           </Card>
         </Link>

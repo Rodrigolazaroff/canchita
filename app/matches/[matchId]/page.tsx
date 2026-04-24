@@ -2,13 +2,14 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/layout/AppShell'
 import { formatDate, formatTime, cn } from '@/lib/utils/format'
-import { Calendar, MapPin, Users, DollarSign, Image as ImageIcon } from 'lucide-react'
+import { Calendar, MapPin, Users, DollarSign } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
 import { MatchActions } from '@/components/match/MatchActions'
 import { MatchShareButton } from '@/components/match/MatchShareButton'
+import { MatchShareModalButton } from '@/components/match/MatchShareModalButton'
 
 export default async function MatchDetailPage({ params }: { params: { matchId: string } }) {
   const supabase = createClient()
@@ -153,13 +154,17 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
         {/* Acciones */}
         {match.status === 'scheduled' && (
           <div className="flex flex-col gap-3">
-            {match.share_image_url && (
-              <MatchShareButton
-                shareImageUrl={match.share_image_url}
-                groupName={(match as any).groups?.name ?? ''}
-                showDownload={false}
-              />
-            )}
+            <MatchShareModalButton
+              matchId={params.matchId}
+              shareImageUrl={match.share_image_url ?? null}
+              formationData={(match as any).formation_data ?? null}
+              matchDate={match.match_date}
+              matchTime={match.match_time}
+              venueName={venueName}
+              groupName={(match as any).groups?.name ?? ''}
+              pricePerPlayer={match.total_price && match.player_count ? `$${Math.ceil(match.total_price / match.player_count).toLocaleString('es-AR')}` : ''}
+              aliasText={match.payment_aliases?.alias ?? ''}
+            />
             <Link
               href={`/matches/${params.matchId}/result`}
               className="inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95 bg-green-primary text-white hover:bg-green-600 h-12 px-5 text-base gap-2 shadow-lg shadow-green-primary/20"
@@ -168,10 +173,18 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
             </Link>
           </div>
         )}
-        {match.status === 'played' && match.share_image_url && (
-          <MatchShareButton
-            shareImageUrl={match.share_image_url}
+        {match.status === 'played' && (
+          <MatchShareModalButton
+            matchId={params.matchId}
+            shareImageUrl={match.share_image_url ?? null}
+            formationData={(match as any).formation_data ?? null}
+            matchDate={match.match_date}
+            matchTime={match.match_time}
+            venueName={venueName}
             groupName={(match as any).groups?.name ?? ''}
+            pricePerPlayer={match.total_price && match.player_count ? `$${Math.ceil(match.total_price / match.player_count).toLocaleString('es-AR')}` : ''}
+            aliasText={match.payment_aliases?.alias ?? ''}
+            showDownload
           />
         )}
       </div>

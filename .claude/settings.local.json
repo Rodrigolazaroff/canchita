@@ -12,7 +12,9 @@
       "Bash(node -e \"const l = require\\('lucide-react'\\); console.log\\('Bandage:', !!l.Bandage, 'HeartPulse:', !!l.HeartPulse\\)\")",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(dir app\\\\matches /s /b)",
+      "Bash(gh pr create --title 'feat: formación mejorada, suplentes siempre visibles, aleatorizar y compartir' --body ' *)"
     ]
   }
 }

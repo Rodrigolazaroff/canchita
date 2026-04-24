@@ -15,8 +15,16 @@ export default async function DashboardPage() {
 
   if (!groups || groups.length === 0) redirect('/onboarding')
 
+  // Sincronizar nombre del perfil con los metadatos de Auth (solo si está vacío)
+  const authName = user.user_metadata?.full_name || user.user_metadata?.name || ''
+  if (authName && !profile?.full_name) {
+    await supabase.from('profiles').update({ full_name: authName }).eq('id', user.id)
+    if (profile) profile.full_name = authName
+  }
+  const displayName = profile?.full_name || authName || user.email?.split('@')[0] || 'U'
+
   return (
-    <AppShell profile={profile} isAdmin={profile?.is_admin}>
+    <AppShell profile={profile} isAdmin={profile?.is_admin} displayName={displayName}>
       <DashboardClient groups={groups} profile={profile} />
     </AppShell>
   )

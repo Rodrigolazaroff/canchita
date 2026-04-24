@@ -64,7 +64,7 @@ export function AliasesClient({ aliases: initial, userId }: AliasesClientProps) 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl text-text-primary">Aliases de Pago</h1>
+        <h1 className="font-display text-2xl text-text-primary">Alias de Pago</h1>
         <Button size="sm" onClick={openAdd}>
           <Plus size={16} /> Agregar
         </Button>
