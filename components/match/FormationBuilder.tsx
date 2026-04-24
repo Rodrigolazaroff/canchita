@@ -16,7 +16,7 @@ import { CSS } from '@dnd-kit/utilities'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
 import { Button } from '@/components/ui/Button'
 import { cn, initials } from '@/lib/utils/format'
-import { X, RotateCcw } from 'lucide-react'
+import { X, RotateCcw, Shuffle } from 'lucide-react'
 import type { Player, MatchType, FormationData, Team } from '@/lib/types'
 
 interface Slot {
@@ -130,6 +130,40 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
     })
   }
 
+  function randomize() {
+    // Jugadores sin asignar al campo (excluye ya asignados a campo)
+    const fieldSlotIds = slots.map(s => s.id)
+    const assignedToField = new Set(
+      Object.entries(assignments).filter(([k]) => fieldSlotIds.includes(k)).map(([, v]) => v)
+    )
+    const toPlace = players.filter(p => !assignedToField.has(p.id))
+    // Slots de campo vacíos
+    const emptySlots = slots.filter(s => !assignments[s.id])
+    // Mezclar jugadores
+    const shuffled = [...toPlace].sort(() => Math.random() - 0.5)
+    const next: Record<string, string> = { ...assignments }
+    // Limpiar bench previo
+    for (let i = 0; i < BENCH_PER_TEAM; i++) {
+      delete next[`bench-dark-${i}`]
+      delete next[`bench-light-${i}`]
+    }
+    // Asignar a slots vacíos del campo
+    emptySlots.forEach((slot, i) => {
+      if (shuffled[i]) next[slot.id] = shuffled[i].id
+    })
+    // Jugadores sobrantes → bench alternado dark/light
+    const leftover = shuffled.slice(emptySlots.length)
+    let darkBench = 0, lightBench = 0
+    leftover.forEach((p, i) => {
+      if (i % 2 === 0 && darkBench < BENCH_PER_TEAM) {
+        next[`bench-dark-${darkBench++}`] = p.id
+      } else if (lightBench < BENCH_PER_TEAM) {
+        next[`bench-light-${lightBench++}`] = p.id
+      }
+    })
+    setAssignments(next)
+  }
+
   function handleFinish() {
     const placements: FormationData['players'] = []
     for (const [slotId, playerId] of Object.entries(assignments)) {
@@ -163,14 +197,22 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
             <span className="text-text-muted font-body">
               {placedCount} en cancha · {unassigned.length} por asignar
             </span>
-            {Object.keys(assignments).length > 0 && (
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setAssignments({})}
-                className="text-text-muted hover:text-red-400 font-body flex items-center gap-1 transition-colors"
+                onClick={randomize}
+                className="text-green-light hover:text-green-400 font-body flex items-center gap-1 transition-colors"
               >
-                <RotateCcw size={12} /> Limpiar todo
+                <Shuffle size={12} /> Aleatorizar
               </button>
-            )}
+              {Object.keys(assignments).length > 0 && (
+                <button
+                  onClick={() => setAssignments({})}
+                  className="text-text-muted hover:text-red-400 font-body flex items-center gap-1 transition-colors"
+                >
+                  <RotateCcw size={12} /> Limpiar
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Field ajustado al espacio flexible */}
@@ -188,7 +230,8 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
 
         {/* Side column con scroll propio */}
         <div className="flex flex-col gap-4 lg:overflow-y-auto lg:pr-2 lg:pb-2 no-scrollbar">
-          {unassigned.length > 0 ? (
+          {/* Jugadores sin asignar — siempre visible si hay */}
+          {unassigned.length > 0 && (
             <div className="flex flex-col gap-3">
               <p className="text-xs font-body font-semibold uppercase tracking-widest text-text-muted">
                 Por asignar
@@ -197,30 +240,31 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
                 {unassigned.map(p => <DraggablePlayerChip key={p.id} player={p} />)}
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-3">
-                <p className="text-xs font-body font-semibold uppercase tracking-widest text-blue-400 border-b border-blue-400/20 pb-1">Suplentes Oscuro</p>
-                <div className="flex flex-col gap-2">
-                  {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
-                    const id = `bench-dark-${i}`
-                    const player = players.find(p => p.id === assignments[id])
-                    return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
-                  })}
-                </div>
-              </div>
-              <div className="flex flex-col gap-3">
-                <p className="text-xs font-body font-semibold uppercase tracking-widest text-slate-300 border-b border-slate-300/20 pb-1">Suplentes Claro</p>
-                <div className="flex flex-col gap-2">
-                  {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
-                    const id = `bench-light-${i}`
-                    const player = players.find(p => p.id === assignments[id])
-                    return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
-                  })}
-                </div>
+          )}
+
+          {/* Suplentes — siempre visibles */}
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-body font-semibold uppercase tracking-widest text-blue-400 border-b border-blue-400/20 pb-1">Suplentes Oscuro</p>
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
+                  const id = `bench-dark-${i}`
+                  const player = players.find(p => p.id === assignments[id])
+                  return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
+                })}
               </div>
             </div>
-          )}
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-body font-semibold uppercase tracking-widest text-slate-300 border-b border-slate-300/20 pb-1">Suplentes Claro</p>
+              <div className="flex flex-col gap-2">
+                {Array.from({ length: BENCH_PER_TEAM }).map((_, i) => {
+                  const id = `bench-light-${i}`
+                  const player = players.find(p => p.id === assignments[id])
+                  return <BenchSlot key={id} id={id} player={player} onUnassign={player ? () => unassign(player.id) : undefined} />
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

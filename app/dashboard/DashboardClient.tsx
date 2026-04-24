@@ -8,7 +8,7 @@ import { PlayerAvatar } from '@/components/player/PlayerAvatar'
 import { MatchCardSkeleton } from '@/components/ui/Skeleton'
 import { formatDate, formatTime, formatDayOfWeek, closestUpcomingDay, pricePerPlayer, cn } from '@/lib/utils/format'
 import Link from 'next/link'
-import { Calendar, MapPin, Users, Plus, ChevronRight } from 'lucide-react'
+import { Calendar, MapPin, Users, Plus, ChevronRight, Share2 } from 'lucide-react'
 import type { Group, Match, PlayerStats, Profile } from '@/lib/types'
 
 interface DashboardClientProps {
@@ -106,15 +106,20 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
                   </div>
                 )}
               </div>
-              <Link 
-                href={`/matches/${nextMatch.id}`}
-                className={cn(
-                  "inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95",
-                  "bg-surface border border-border text-text-primary hover:bg-border h-9 px-4 text-sm gap-1.5 w-full"
+              <div className="flex gap-2">
+                <Link
+                  href={`/matches/${nextMatch.id}`}
+                  className={cn(
+                    "flex-1 inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95",
+                    "bg-surface border border-border text-text-primary hover:bg-border h-9 px-4 text-sm gap-1.5"
+                  )}
+                >
+                  Ver detalle <ChevronRight size={14} />
+                </Link>
+                {(nextMatch as any).share_image_url && (
+                  <ShareButton shareImageUrl={(nextMatch as any).share_image_url} groupName={group.name} />
                 )}
-              >
-                Ver detalle <ChevronRight size={14} />
-              </Link>
+              </div>
             </Card>
           ) : (
             <Card className="flex flex-col items-center gap-4 py-8">
@@ -195,5 +200,32 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
         )}
       </div>
     </div>
+  )
+}
+
+function ShareButton({ shareImageUrl, groupName }: { shareImageUrl: string; groupName: string }) {
+  async function handleShare() {
+    try {
+      const blob = await (await fetch(shareImageUrl)).blob()
+      const file = new File([blob], 'canchita-formacion.png', { type: 'image/png' })
+      if (navigator.share && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Formación ${groupName}` })
+      } else {
+        const a = document.createElement('a')
+        a.href = shareImageUrl
+        a.download = 'canchita-formacion.png'
+        a.click()
+      }
+    } catch (e) {
+      if ((e as Error).name !== 'AbortError') console.error(e)
+    }
+  }
+  return (
+    <button
+      onClick={handleShare}
+      className="h-9 px-3 rounded-xl bg-green-primary/15 border border-green-primary/30 text-green-light hover:bg-green-primary/25 transition-colors flex items-center gap-1.5 text-sm font-body font-semibold"
+    >
+      <Share2 size={14} /> Compartir
+    </button>
   )
 }

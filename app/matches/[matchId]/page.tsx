@@ -152,23 +152,27 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
 
         {/* Acciones */}
         {match.status === 'scheduled' && (
-          <div className="flex gap-3">
-            <Link 
+          <div className="flex flex-col gap-3">
+            {match.share_image_url && (
+              <MatchShareButton
+                shareImageUrl={match.share_image_url}
+                groupName={(match as any).groups?.name ?? ''}
+                showDownload={false}
+              />
+            )}
+            <Link
               href={`/matches/${params.matchId}/result`}
-              className="flex-[2] inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95 bg-green-primary text-white hover:bg-green-600 h-12 px-5 text-base gap-2 shadow-lg shadow-green-primary/20"
+              className="inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95 bg-green-primary text-white hover:bg-green-600 h-12 px-5 text-base gap-2 shadow-lg shadow-green-primary/20"
             >
               Cargar resultado
             </Link>
-            {match.share_image_url && (
-              <div className="flex-1">
-                <MatchShareButton 
-                  shareImageUrl={match.share_image_url} 
-                  groupName={(match as any).groups?.name ?? ''} 
-                  showDownload={false}
-                />
-              </div>
-            )}
           </div>
+        )}
+        {match.status === 'played' && match.share_image_url && (
+          <MatchShareButton
+            shareImageUrl={match.share_image_url}
+            groupName={(match as any).groups?.name ?? ''}
+          />
         )}
       </div>
     </AppShell>

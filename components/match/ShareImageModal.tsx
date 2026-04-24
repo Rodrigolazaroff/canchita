@@ -246,25 +246,26 @@ export function ShareImageModal({
     ctx.stroke()
 
     // Precio y alias — siempre visibles si existen
-    const footerParts = [
-      pricePerPlayer ? `⚽ Por jugador ${pricePerPlayer}` : null,
-      aliasText      ? `💳 Alias: ${aliasText}`           : null,
-    ].filter(Boolean) as string[]
-
     ctx.textAlign = 'center'
-    ctx.font = 'bold 26px sans-serif'
+    let currentY = footerY
 
-    if (footerParts.length === 2) {
-      // Dos líneas
+    if (pricePerPlayer) {
       ctx.fillStyle = '#ffffff'
-      ctx.fillText(footerParts[0], cx, footerY)
-      ctx.fillStyle = '#9ca3af'
-      ctx.font = '22px sans-serif'
-      ctx.fillText(footerParts[1], cx, footerY + 34)
-    } else if (footerParts.length === 1) {
-      ctx.fillStyle = '#ffffff'
-      ctx.fillText(footerParts[0], cx, footerY)
+      ctx.font = 'bold 26px sans-serif'
+      ctx.fillText(`⚽ Por jugador ${pricePerPlayer}`, cx, currentY)
+      currentY += 36
     }
+    if (aliasText) {
+      ctx.fillStyle = '#9ca3af'
+      ctx.font = 'bold 22px sans-serif'
+      ctx.fillText(`💳 Alias: ${aliasText}`, cx, currentY)
+      currentY += 32
+    }
+
+    // Branding siempre visible al final
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    ctx.font = '20px sans-serif'
+    const subsBaseY = pricePerPlayer || aliasText ? currentY + 16 : currentY + 10
 
     // Suplentes (sin posición asignada) → 2 columnas
     const benchAll = formation.players.filter(p => p.position_x === null || p.position_y === null)
@@ -273,8 +274,8 @@ export function ShareImageModal({
     const leftCol  = benchDark.length  ? benchDark  : benchAll.slice(0, Math.ceil(benchAll.length / 2))
     const rightCol = benchLight.length ? benchLight : benchAll.slice(Math.ceil(benchAll.length / 2))
 
-    const subsY = footerParts.length === 2 ? footerY + 70 : footerY + 40
-    const lineH = 26
+    const subsY = subsBaseY
+    const lineH = 36
 
     const drawBenchCol = (
       players: typeof benchAll,
@@ -285,10 +286,10 @@ export function ShareImageModal({
     ) => {
       ctx.textAlign = align
       ctx.fillStyle = titleColor
-      ctx.font = 'bold 18px sans-serif'
+      ctx.font = 'bold 26px sans-serif'
       ctx.fillText(title, startX, subsY)
       ctx.fillStyle = '#e5e7eb'
-      ctx.font = '18px sans-serif'
+      ctx.font = '24px sans-serif'
       players.forEach((p, i) => {
         ctx.fillText(`• ${p.name}`, startX, subsY + lineH * (i + 1))
       })
