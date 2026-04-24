@@ -54,8 +54,9 @@ export function AliasesClient({ aliases: initial, userId }: AliasesClientProps) 
   }
 
   async function handleDelete(id: string) {
+    if (!confirm('¿Estás seguro? El alias dejará de estar disponible para nuevos partidos.')) return
     const supabase = createClient()
-    await supabase.from('payment_aliases').delete().eq('id', id)
+    await supabase.from('payment_aliases').update({ deleted_at: new Date().toISOString() }).eq('id', id)
     setAliases(prev => prev.filter(a => a.id !== id))
     toast.success('Alias eliminado')
   }

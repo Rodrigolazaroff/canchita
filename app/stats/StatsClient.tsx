@@ -38,23 +38,12 @@ interface TeamMetricsRow {
 }
 
 type Tab = 'jugadores' | 'rankings' | 'equipos'
-type RankingType = 'goles' | 'victorias'
-
-// ─── Helpers ───────────────────────────────────────────────────────────────────
-
-function luckLabel(pct: number): { label: string; color: string } {
-  if (pct >= 70) return { label: '🍀 Muy suertudo',  color: 'text-green-light' }
-  if (pct >= 50) return { label: '😊 Con suerte',    color: 'text-green-light' }
-  if (pct >= 30) return { label: '😐 Normal',        color: 'text-text-muted'  }
-  return              { label: '😬 Sin suerte',      color: 'text-red-400'     }
-}
 
 // ─── Componente principal ──────────────────────────────────────────────────────
 
 export function StatsClient({ groups }: { groups: Group[] }) {
   const { setGroups, activeGroupId, setActiveGroup, activeGroup } = useGroupStore()
   const [tab, setTab]           = useState<Tab>('jugadores')
-  const [rankType, setRankType] = useState<RankingType>('goles')
   const [players, setPlayers]   = useState<PlayerStatRow[]>([])
   const [teamMetrics, setTeamMetrics] = useState<TeamMetricsRow | null>(null)
   const [loading, setLoading]   = useState(true)
@@ -154,36 +143,14 @@ export function StatsClient({ groups }: { groups: Group[] }) {
       {/* ── Tab: Rankings ────────────────────────────────────────────────────── */}
       {tab === 'rankings' && (
         <div className="flex flex-col gap-4">
-          <div className="flex bg-surface border border-border rounded-xl p-1">
-            {([
-              { key: 'goles',     label: '⚽ Goles'  },
-              { key: 'victorias', label: '🍀 Suerte' },
-            ] as { key: RankingType; label: string }[]).map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => setRankType(key)}
-                className={cn(
-                  'flex-1 py-2 rounded-lg text-sm font-body font-semibold transition-all',
-                  rankType === key ? 'bg-green-primary text-white' : 'text-text-muted hover:text-text-primary'
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
           <div className="flex flex-col gap-2">
             {loading && [1,2,3,4].map(i => (
               <div key={i} className="h-16 bg-surface border border-border rounded-xl animate-pulse" />
             ))}
             {!loading && [...players]
-              .sort((a, b) =>
-                rankType === 'goles'
-                  ? b.total_goals - a.total_goals || b.matches_played - a.matches_played
-                  : b.win_pct     - a.win_pct     || b.matches_played - a.matches_played
-              )
+              .sort((a, b) => b.total_goals - a.total_goals || b.matches_played - a.matches_played)
               .map((p, i) => (
-                <RankingRow key={p.player_id} player={p} rank={i + 1} type={rankType} />
+                <RankingRow key={p.player_id} player={p} rank={i + 1} />
               ))}
           </div>
         </div>
@@ -254,7 +221,6 @@ function SummaryChip({ icon, label, value }: { icon: React.ReactNode; label: str
 }
 
 function PlayerCard({ player, rank }: { player: PlayerStatRow; rank: number }) {
-  const luck = luckLabel(player.win_pct)
   return (
     <Card className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
@@ -264,14 +230,12 @@ function PlayerCard({ player, rank }: { player: PlayerStatRow; rank: number }) {
         <PlayerAvatar name={player.name} id={player.player_id} size={44} />
         <div className="flex-1 min-w-0">
           <p className="font-body font-semibold text-text-primary truncate">{player.name}</p>
-          <p className={cn('text-xs font-body', luck.color)}>{luck.label}</p>
         </div>
       </div>
       <div className="flex gap-2 pl-10">
         <StatChip value={player.matches_played}        label="PJ"  />
         <StatChip value={player.total_goals}           label="⚽"  color="text-green-light" />
         <StatChip value={Number(player.goal_avg).toFixed(2)} label="G/P" />
-        <StatChip value={`${player.win_pct}%`}         label="V"   />
       </div>
     </Card>
   )
@@ -286,12 +250,10 @@ function StatChip({ value, label, color }: { value: string | number; label: stri
   )
 }
 
-function RankingRow({ player, rank, type }: { player: PlayerStatRow; rank: number; type: RankingType }) {
-  const value = type === 'goles' ? player.total_goals : player.win_pct
-  const unit  = type === 'goles' ? 'goles' : '% vic.'
-  const sub   = type === 'goles'
-    ? `${player.matches_played} partidos`
-    : `${player.wins} victorias de ${player.matches_played}`
+function RankingRow({ player, rank }: { player: PlayerStatRow; rank: number }) {
+  const value = player.total_goals
+  const unit  = 'goles'
+  const sub   = `${player.matches_played} partidos`
 
   return (
     <div className="flex items-center gap-3 p-3 bg-surface border border-border rounded-xl">

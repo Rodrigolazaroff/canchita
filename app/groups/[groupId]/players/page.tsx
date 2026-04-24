@@ -15,6 +15,7 @@ export default async function PlayersPage({ params }: { params: { groupId: strin
       .select('*')
       .eq('group_id', params.groupId)
       .eq('user_id', user.id)
+      .is('deleted_at', null)
       .order('name'),
     supabase.from('groups').select('*').eq('id', params.groupId).eq('user_id', user.id).single(),
   ])

@@ -15,6 +15,7 @@ export default async function HistoryPage({ params }: { params: { groupId: strin
       .select('*, venues(*)')
       .eq('group_id', params.groupId)
       .eq('user_id', user.id)
+      .is('deleted_at', null)
       .order('match_date', { ascending: false })
       .limit(50),
   ])

@@ -67,8 +67,9 @@ export function AdminClient({ stats, venues: initial }: AdminClientProps) {
   }
 
   async function handleDelete(id: string) {
+    if (!confirm('¿Estás seguro? Las canchas no se borran físicamente pero dejarán de ser visibles.')) return
     const supabase = createClient()
-    await supabase.from('venues').delete().eq('id', id)
+    await supabase.from('venues').update({ deleted_at: new Date().toISOString() }).eq('id', id)
     setVenues(prev => prev.filter(v => v.id !== id))
     toast.success('Cancha eliminada')
   }

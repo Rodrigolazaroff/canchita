@@ -43,6 +43,7 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
         .select('*, venues(*), payment_aliases(*)')
         .eq('group_id', group.id)
         .eq('status', 'scheduled')
+        .is('deleted_at', null)
         .gte('match_date', new Date().toISOString().split('T')[0])
         .order('match_date')
         .limit(1)

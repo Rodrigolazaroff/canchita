@@ -10,7 +10,7 @@ export default async function AdminPage() {
 
   const [{ data: profile }, { data: venues }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('venues').select('*').eq('is_global', true).order('name'),
+    supabase.from('venues').select('*').eq('is_global', true).is('deleted_at', null).order('name'),
   ])
 
   if (!profile?.is_admin) redirect('/dashboard')
@@ -21,6 +21,7 @@ export default async function AdminPage() {
     supabase.from('groups').select('id', { count: 'exact', head: true }).is('deleted_at', null),
     supabase.from('matches').select('id', { count: 'exact', head: true })
       .eq('status', 'played')
+      .is('deleted_at', null)
       .gte('match_date', new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0]),
     supabase.from('profiles').select('id', { count: 'exact', head: true })
       .eq('is_admin', false)

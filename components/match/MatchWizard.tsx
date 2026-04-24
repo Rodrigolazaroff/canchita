@@ -8,19 +8,18 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import { FormationBuilder } from '@/components/match/FormationBuilder'
 import { ShareImageModal } from '@/components/match/ShareImageModal'
-import type { Group, Player, Venue, PaymentAlias, FormationData, MatchType } from '@/lib/types'
-import { Plus } from 'lucide-react'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
+import type { Group, Player, Venue, PaymentAlias, FormationData, MatchType } from '@/lib/types'
 
 interface WizardProps {
   groups: Group[]
   userId: string
+  initialMatch?: any // Datos del partido si estamos editando
+  initialPlayers?: any[] // Jugadores del partido si estamos editando
 }
-
-interface VenueResult extends Venue {}
 
 const MATCH_TYPES: { value: MatchType; label: string }[] = [
   { value: 'futbol5', label: 'Fútbol 5' },
@@ -28,14 +27,17 @@ const MATCH_TYPES: { value: MatchType; label: string }[] = [
   { value: 'futbol11', label: 'Fútbol 11' },
 ]
 
-export function NewMatchWizard({ groups, userId }: WizardProps) {
+export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: WizardProps) {
   const router = useRouter()
+  const isEditing = !!initialMatch
   const { activeGroupId, setGroups, setActiveGroup, activeGroup } = useGroupStore()
 
   // Init store
   useEffect(() => {
     setGroups(groups)
-    if (!activeGroupId || !groups.find(g => g.id === activeGroupId)) {
+    if (isEditing) {
+      setActiveGroup(initialMatch.group_id)
+    } else if (!activeGroupId || !groups.find(g => g.id === activeGroupId)) {
       setActiveGroup(groups[0].id)
     }
   }, [])
@@ -47,43 +49,39 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
 
   // Step 1
   const [players, setPlayers] = useState<Player[]>([])
-  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [selected, setSelected] = useState<Set<string>>(new Set(initialPlayers?.map(p => p.player_id) || []))
   const [guestName, setGuestName] = useState('')
   const [showGuestInput, setShowGuestInput] = useState(false)
   const [guestPlayers, setGuestPlayers] = useState<Player[]>([])
 
   // Step 2
-  const [selectedVenue, setSelectedVenue] = useState<VenueResult | null>(null)
-  const [venueManual, setVenueManual] = useState('')
-  const [matchType, setMatchType] = useState<MatchType>(group?.match_type ?? 'futbol5')
-  const [matchDate, setMatchDate] = useState(
-    (group?.days_of_week && group.days_of_week.length > 0) ? nextOccurrenceOf(group.days_of_week) : new Date().toISOString().split('T')[0]
-  )
-  const [matchTime, setMatchTime] = useState('21:00')
-  const [totalPrice, setTotalPrice] = useState('')
+  const [venueManual, setVenueManual] = useState(initialMatch?.venue_name_override || initialMatch?.venues?.name || '')
+  const [matchType, setMatchType] = useState<MatchType>(initialMatch?.formation_data?.matchType || group?.match_type || 'futbol5')
+  const [matchDate, setMatchDate] = useState(initialMatch?.match_date || (group?.days_of_week?.length ? nextOccurrenceOf(group.days_of_week) : new Date().toISOString().split('T')[0]))
+  const [matchTime, setMatchTime] = useState(initialMatch?.match_time?.substring(0, 5) || '21:00')
+  const [totalPrice, setTotalPrice] = useState(initialMatch?.total_price?.toString() || '')
   const [aliases, setAliases] = useState<PaymentAlias[]>([])
-  const [selectedAlias, setSelectedAlias] = useState<string>('')
+  const [selectedAlias, setSelectedAlias] = useState<string>(initialMatch?.payment_alias_id || '')
 
   // Step 3
-  const [formation, setFormation] = useState<FormationData | null>(null)
-  const [matchId, setMatchId] = useState<string | null>(null)
+  const [formation, setFormation] = useState<FormationData | null>(initialMatch?.formation_data || null)
+  const [matchId, setMatchId] = useState<string | null>(initialMatch?.id || null)
   const [shareOpen, setShareOpen] = useState(false)
 
   useEffect(() => {
     if (!group) return
     const supabase = createClient()
     Promise.all([
-      supabase.from('players').select('*').eq('group_id', group.id).eq('is_active', true).order('name'),
-      supabase.from('payment_aliases').select('*').eq('user_id', userId).order('label'),
+      supabase.from('players').select('*').eq('group_id', group.id).eq('is_active', true).is('deleted_at', null).order('name'),
+      supabase.from('payment_aliases').select('*').eq('user_id', userId).is('deleted_at', null).order('label'),
     ]).then(([pRes, aRes]) => {
-      const sortedPlayers = sortByLastMatch(pRes.data ?? [])
-      setPlayers(sortedPlayers)
+      setPlayers(pRes.data ?? [])
       setAliases(aRes.data ?? [])
-      if (aRes.data?.length) setSelectedAlias(aRes.data[0].id)
+      if (!isEditing && aRes.data?.length && !selectedAlias) {
+        setSelectedAlias(aRes.data[0].id)
+      }
     })
   }, [group?.id])
-
-  function sortByLastMatch(ps: Player[]) { return ps }
 
   function togglePlayer(id: string) {
     setSelected(prev => {
@@ -123,7 +121,7 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
     setSaving(true)
     const supabase = createClient()
 
-    // Create real guest players first
+    // Manejar invitados nuevos
     const realGuests = guestPlayers.filter(g => selected.has(g.id))
     const guestMap: Record<string, string> = {}
     for (const g of realGuests) {
@@ -135,33 +133,51 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
       if (data) guestMap[g.id] = data.id
     }
 
-    const { data: match, error } = await supabase
-      .from('matches')
-      .insert({
-        group_id: group.id,
-        user_id: userId,
-        venue_id: selectedVenue?.id ?? null,
-        venue_name_override: !selectedVenue ? (venueManual || null) : null,
-        match_date: matchDate,
-        match_time: matchTime,
-        total_price: totalPrice ? parseFloat(totalPrice) : null,
-        player_count: selectedPlayers.length,
-        payment_alias_id: selectedAlias || null,
-        formation_data: formationData,
-        status: 'scheduled',
-      })
-      .select()
-      .single()
+    const matchData = {
+      group_id: group.id,
+      user_id: userId,
+      venue_name_override: venueManual || null,
+      match_date: matchDate,
+      match_time: matchTime,
+      total_price: totalPrice ? parseFloat(totalPrice) : null,
+      player_count: selectedPlayers.length,
+      payment_alias_id: selectedAlias || null,
+      formation_data: formationData,
+      status: 'scheduled',
+    }
 
-    if (error || !match) {
-      toast.error('Error al crear el partido')
+    let currentMatchId = matchId
+    let error: any = null
+
+    if (isEditing && matchId) {
+      const { error: err } = await supabase
+        .from('matches')
+        .update(matchData)
+        .eq('id', matchId)
+      error = err
+    } else {
+      const { data: match, error: err } = await supabase
+        .from('matches')
+        .insert(matchData)
+        .select()
+        .single()
+      error = err
+      currentMatchId = match?.id || null
+    }
+
+    if (error || !currentMatchId) {
+      toast.error(isEditing ? 'Error al actualizar' : 'Error al crear')
       setSaving(false)
       return
     }
 
-    // Insert match_players
+    // Actualizar match_players (borrar y re-insertar para simplicidad)
+    if (isEditing) {
+      await supabase.from('match_players').delete().eq('match_id', currentMatchId)
+    }
+
     const matchPlayerRows = formationData.players.map(fp => ({
-      match_id: match.id,
+      match_id: currentMatchId,
       player_id: guestMap[fp.player_id] ?? fp.player_id,
       team: fp.team,
       position_x: fp.position_x,
@@ -170,7 +186,7 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
     await supabase.from('match_players').insert(matchPlayerRows)
 
     setFormation(formationData)
-    setMatchId(match.id)
+    setMatchId(currentMatchId)
     setSaving(false)
     setShareOpen(true)
   }
@@ -180,10 +196,12 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
       {step !== 2 && (
         <>
           <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="p-1 -ml-1 text-text-muted hover:text-text-primary transition-colors">
+            <Link href={isEditing ? `/matches/${matchId}` : "/dashboard"} className="p-1 -ml-1 text-text-muted hover:text-text-primary transition-colors">
               <ArrowLeft size={22} />
             </Link>
-            <h1 className="font-display text-2xl text-text-primary flex-1">Crear Partido</h1>
+            <h1 className="font-display text-2xl text-text-primary flex-1">
+              {isEditing ? 'Editar Partido' : 'Crear Partido'}
+            </h1>
             <span className="text-sm text-text-muted font-body">Paso {step + 1} de 3</span>
           </div>
 
@@ -279,7 +297,6 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
           </div>
 
           <div className="flex flex-col gap-2.5 flex-1 overflow-y-auto no-scrollbar pb-2 min-h-0 px-1">
-            {/* Match type selector */}
             <div className="flex flex-col gap-1.5 shrink-0">
               <label className="text-sm text-text-secondary font-body">Tipo de partido</label>
               <div className="flex gap-2">
@@ -289,9 +306,7 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
                     onClick={() => setMatchType(value)}
                     className={cn(
                       'flex-1 h-12 rounded-xl border text-sm font-body font-semibold transition-colors',
-                      matchType === value
-                        ? 'bg-green-primary border-green-primary text-white'
-                        : 'bg-surface border-border text-text-secondary hover:border-green-primary/50'
+                      matchType === value ? 'bg-green-primary border-green-primary text-white' : 'bg-surface border-border text-text-secondary hover:border-green-primary/50'
                     )}
                   >
                     {label}
@@ -300,68 +315,32 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
               </div>
             </div>
 
-            <Input
-              label="Cancha"
-              placeholder="Ej: Complejo Deportivo"
-              value={venueManual}
-              onChange={e => setVenueManual(e.target.value)}
-            />
+            <Input label="Cancha" placeholder="Ej: Complejo Deportivo" value={venueManual} onChange={e => setVenueManual(e.target.value)} />
 
             <div className="grid grid-cols-2 gap-3 shrink-0">
-              <Input
-                label="Fecha"
-                type="date"
-                value={matchDate}
-                onChange={e => setMatchDate(e.target.value)}
-              />
-              {/* Selector de hora como bloque sólido unificado */}
+              <Input label="Fecha" type="date" value={matchDate} onChange={e => setMatchDate(e.target.value)} />
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm text-text-secondary font-body">Hora</label>
                 <div className="flex h-12 bg-surface border border-border rounded-xl px-2 items-center focus-within:border-green-primary transition-colors">
-                  <select
-                    value={matchTime.split(':')[0]}
-                    onChange={e => setMatchTime(`${e.target.value}:${matchTime.split(':')[1]}`)}
-                    className="flex-1 bg-transparent text-text-primary font-body text-center focus:outline-none appearance-none cursor-pointer no-scrollbar"
-                  >
-                    {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map(h => (
-                      <option key={h} value={h} className="bg-surface text-text-primary">{h}</option>
-                    ))}
+                  <select value={matchTime.split(':')[0]} onChange={e => setMatchTime(`${e.target.value}:${matchTime.split(':')[1]}`)} className="flex-1 bg-transparent text-text-primary font-body text-center focus:outline-none appearance-none cursor-pointer no-scrollbar">
+                    {Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')).map(h => (<option key={h} value={h} className="bg-surface text-text-primary">{h}</option>))}
                   </select>
                   <span className="text-text-muted font-display text-lg pb-1">:</span>
-                  <select
-                    value={matchTime.split(':')[1]}
-                    onChange={e => setMatchTime(`${matchTime.split(':')[0]}:${e.target.value}`)}
-                    className="flex-1 bg-transparent text-text-primary font-body text-center focus:outline-none appearance-none cursor-pointer no-scrollbar"
-                  >
-                    {['00', '15', '30', '45'].map(m => (
-                      <option key={m} value={m} className="bg-surface text-text-primary">{m}</option>
-                    ))}
+                  <select value={matchTime.split(':')[1]} onChange={e => setMatchTime(`${matchTime.split(':')[0]}:${e.target.value}`)} className="flex-1 bg-transparent text-text-primary font-body text-center focus:outline-none appearance-none cursor-pointer no-scrollbar">
+                    {['00', '15', '30', '45'].map(m => (<option key={m} value={m} className="bg-surface text-text-primary">{m}</option>))}
                   </select>
                 </div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3 shrink-0">
-              <Input
-                label="Precio de la cancha"
-                type="text"
-                inputMode="numeric"
-                prefix="$"
-                placeholder="5.000"
-                value={totalPrice ? new Intl.NumberFormat('es-AR').format(Number(totalPrice)) : ''}
-                onChange={e => setTotalPrice(e.target.value.replace(/\D/g, ''))}
-              />
-
+              <Input label="Precio de la cancha" type="text" inputMode="numeric" prefix="$" placeholder="5.000" value={totalPrice ? new Intl.NumberFormat('es-AR').format(Number(totalPrice)) : ''} onChange={e => setTotalPrice(e.target.value.replace(/\D/g, ''))} />
               <div className="flex flex-col gap-1.5 shrink-0">
                 <label className="text-sm text-text-secondary font-body">Cada uno</label>
                 {totalPrice && selectedPlayers.length ? (
                   <div className="h-12 bg-surface border border-border rounded-xl pl-8 pr-4 flex items-center justify-start transition-colors relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-body">
-                      $
-                    </span>
-                    <p className="font-body text-text-primary">
-                      {new Intl.NumberFormat('es-AR').format(Math.ceil(Number(totalPrice) / selectedPlayers.length))}
-                    </p>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-body">$</span>
+                    <p className="font-body text-text-primary">{new Intl.NumberFormat('es-AR').format(Math.ceil(Number(totalPrice) / selectedPlayers.length))}</p>
                   </div>
                 ) : (
                   <div className="h-12 bg-surface border border-dashed border-border/50 rounded-xl px-4 flex items-center justify-center transition-colors">
@@ -374,15 +353,9 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
             {aliases.length > 0 && (
               <div className="flex flex-col gap-1.5 shrink-0">
                 <label className="text-sm text-text-secondary font-body">Alias de pago</label>
-                <select
-                  value={selectedAlias}
-                  onChange={e => setSelectedAlias(e.target.value)}
-                  className="w-full h-12 bg-surface border border-border rounded-xl px-4 text-text-primary font-body focus:outline-none focus:border-green-primary transition-colors appearance-none cursor-pointer no-scrollbar"
-                >
+                <select value={selectedAlias} onChange={e => setSelectedAlias(e.target.value)} className="w-full h-12 bg-surface border border-border rounded-xl px-4 text-text-primary font-body focus:outline-none focus:border-green-primary transition-colors appearance-none cursor-pointer no-scrollbar">
                   <option value="" className="bg-surface text-text-primary">Sin alias</option>
-                  {aliases.map(a => (
-                    <option key={a.id} value={a.id} className="bg-surface text-text-primary">{a.label} — {a.alias}</option>
-                  ))}
+                  {aliases.map(a => (<option key={a.id} value={a.id} className="bg-surface text-text-primary">{a.label} — {a.alias}</option>))}
                 </select>
               </div>
             )}
@@ -390,13 +363,7 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
 
           <div className="flex gap-3 shrink-0 pt-2 border-t border-border/50">
             <Button variant="secondary" onClick={() => setStep(0)} className="flex-1 h-12 text-base">Atrás</Button>
-            <Button
-              onClick={() => setStep(2)}
-              className="flex-1 h-12 text-base shadow-lg shadow-green-primary/20"
-              disabled={!matchDate || !matchTime}
-            >
-              Armar formación
-            </Button>
+            <Button onClick={() => setStep(2)} className="flex-1 h-12 text-base shadow-lg shadow-green-primary/20" disabled={!matchDate || !matchTime}>Armar formación</Button>
           </div>
         </div>
       )}
@@ -404,13 +371,7 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
       {/* Step 3 — Formation */}
       {step === 2 && (
         <div className="flex flex-col flex-1 min-h-0">
-          <FormationBuilder
-            players={selectedPlayers}
-            matchType={matchType}
-            onBack={() => setStep(1)}
-            onFinish={saveMatch}
-            saving={saving}
-          />
+          <FormationBuilder players={selectedPlayers} matchType={matchType} onBack={() => setStep(1)} onFinish={saveMatch} saving={saving} />
         </div>
       )}
 
@@ -421,7 +382,7 @@ export function NewMatchWizard({ groups, userId }: WizardProps) {
           formation={formation}
           matchDate={matchDate}
           matchTime={matchTime}
-          venueName={selectedVenue?.name ?? venueManual ?? ''}
+          venueName={venueManual ?? ''}
           groupName={group?.name ?? ''}
           pricePerPlayer={priceDisplay ?? ''}
           aliasText={aliases.find(a => a.id === selectedAlias)?.alias ?? ''}

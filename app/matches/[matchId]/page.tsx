@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
+import { MatchActions } from '@/components/match/MatchActions'
 import { MatchShareButton } from '@/components/match/MatchShareButton'
 
 export default async function MatchDetailPage({ params }: { params: { matchId: string } }) {
@@ -21,6 +22,7 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
       .select('*, venues(*), payment_aliases(*), groups(name)')
       .eq('id', params.matchId)
       .eq('user_id', user.id)
+      .is('deleted_at', null)
       .single(),
     supabase
       .from('match_players')
@@ -40,15 +42,20 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
       <div className="flex flex-col gap-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="font-display text-2xl text-text-primary">Detalle del Partido</h1>
-          <span className={`text-xs px-2 py-1 rounded-full font-body font-semibold ${
-            match.status === 'played'    ? 'bg-green-primary/20 text-green-light' :
-            match.status === 'cancelled' ? 'bg-red-900/30 text-red-400' :
-            'bg-border text-text-muted'
-          }`}>
-            {match.status === 'played' ? 'Jugado' : match.status === 'cancelled' ? 'Cancelado' : 'Programado'}
-          </span>
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <h1 className="font-display text-2xl text-text-primary">Detalle del Partido</h1>
+            <MatchActions matchId={params.matchId} />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-body font-bold uppercase tracking-wider ${
+              match.status === 'played'    ? 'bg-green-primary/20 text-green-light' :
+              match.status === 'cancelled' ? 'bg-red-900/30 text-red-400' :
+              'bg-border text-text-muted'
+            }`}>
+              {match.status === 'played' ? 'Jugado' : match.status === 'cancelled' ? 'Cancelado' : 'Programado'}
+            </span>
+          </div>
         </div>
 
         {/* Score */}
@@ -145,12 +152,23 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
 
         {/* Acciones */}
         {match.status === 'scheduled' && (
-          <Link 
-            href={`/matches/${params.matchId}/result`}
-            className="inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95 bg-green-primary text-white hover:bg-green-600 h-11 px-5 text-base gap-2 w-full"
-          >
-            Cargar resultado
-          </Link>
+          <div className="flex gap-3">
+            <Link 
+              href={`/matches/${params.matchId}/result`}
+              className="flex-[2] inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95 bg-green-primary text-white hover:bg-green-600 h-12 px-5 text-base gap-2 shadow-lg shadow-green-primary/20"
+            >
+              Cargar resultado
+            </Link>
+            {match.share_image_url && (
+              <div className="flex-1">
+                <MatchShareButton 
+                  shareImageUrl={match.share_image_url} 
+                  groupName={(match as any).groups?.name ?? ''} 
+                  showDownload={false}
+                />
+              </div>
+            )}
+          </div>
         )}
       </div>
     </AppShell>

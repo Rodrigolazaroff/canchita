@@ -10,7 +10,7 @@ export default async function AliasesPage() {
 
   const [{ data: profile }, { data: aliases }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('payment_aliases').select('*').eq('user_id', user.id).order('label'),
+    supabase.from('payment_aliases').select('*').eq('user_id', user.id).is('deleted_at', null).order('label'),
   ])
 
   return (

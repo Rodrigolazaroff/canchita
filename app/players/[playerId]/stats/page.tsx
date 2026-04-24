@@ -12,7 +12,7 @@ export default async function PlayerStatsPage({ params }: { params: { playerId: 
 
   const [{ data: profile }, { data: player }, { data: stats }, { data: recentMatches }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('players').select('*').eq('id', params.playerId).single(),
+    supabase.from('players').select('*').eq('id', params.playerId).is('deleted_at', null).single(),
     supabase.from('player_stats').select('*').eq('player_id', params.playerId).single(),
     supabase
       .from('match_players')

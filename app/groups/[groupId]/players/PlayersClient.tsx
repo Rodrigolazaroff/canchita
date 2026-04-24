@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PlayerCardSkeleton } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
-import { Plus, MoreVertical, UserCheck, UserX, Pencil, Bandage, HeartPulse } from 'lucide-react'
+import { Plus, MoreVertical, UserCheck, UserX, Pencil, Bandage, HeartPulse, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/format'
 import type { Player } from '@/lib/types'
@@ -109,6 +109,22 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
     setMenuPlayer(null)
   }
 
+  async function handleDelete(player: Player) {
+    if (!confirm(`¿Estás seguro de que quieres eliminar a ${player.name}?`)) return
+    setLoading(true)
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('players')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', player.id)
+
+    if (error) { toast.error('Error al eliminar'); setLoading(false); return }
+    setPlayers(prev => prev.filter(p => p.id !== player.id))
+    setMenuPlayer(null)
+    toast.success('Jugador eliminado')
+    setLoading(false)
+  }
+
   function openEdit(player: Player) {
     setEditPlayer(player)
     setForm({ name: player.name, isGuest: player.is_guest, guestLabel: player.guest_label ?? '' })
@@ -208,6 +224,13 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
               {menuPlayer.is_active
                 ? <><UserX size={18} /> Desactivar jugador</>
                 : <><UserCheck size={18} /> Reactivar jugador</>}
+            </button>
+            <button
+              onClick={() => handleDelete(menuPlayer)}
+              disabled={loading}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-red-900/40 text-red-500 font-body transition-colors"
+            >
+              <Trash2 size={18} /> Eliminar permanentemente
             </button>
           </div>
         )}

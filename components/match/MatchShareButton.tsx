@@ -6,9 +6,10 @@ import { toast } from 'sonner'
 interface MatchShareButtonProps {
   shareImageUrl: string
   groupName: string
+  showDownload?: boolean
 }
 
-export function MatchShareButton({ shareImageUrl, groupName }: MatchShareButtonProps) {
+export function MatchShareButton({ shareImageUrl, groupName, showDownload = true }: MatchShareButtonProps) {
   async function handleShare() {
     try {
       const blob = await (await fetch(shareImageUrl)).blob()
@@ -31,11 +32,13 @@ export function MatchShareButton({ shareImageUrl, groupName }: MatchShareButtonP
   }
 
   return (
-    <div className="flex gap-3">
-      <Button variant="secondary" onClick={handleDownload} className="flex-1">
-        <Download size={16} /> Descargar
-      </Button>
-      <Button onClick={handleShare} className="flex-1">
+    <div className="flex gap-3 w-full">
+      {showDownload && (
+        <Button variant="secondary" onClick={handleDownload} className="flex-1">
+          <Download size={16} /> Descargar
+        </Button>
+      )}
+      <Button onClick={handleShare} className="flex-1 gap-2">
         <Share2 size={16} /> Compartir
       </Button>
     </div>
