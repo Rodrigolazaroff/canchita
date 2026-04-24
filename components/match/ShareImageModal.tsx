@@ -155,9 +155,9 @@ export function ShareImageModal({
 
     // Nombre del grupo — arriba-izquierda
     ctx.textAlign = 'left'
-    ctx.fillStyle = '#e5e7eb'
-    ctx.font = 'bold 22px sans-serif'
-    ctx.fillText(groupName, FX + 10, 50)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 28px sans-serif'
+    ctx.fillText(groupName, FX + 10, 52)
 
     // Cancha + fecha + hora — arriba-derecha (2 líneas)
     ctx.textAlign = 'right'
@@ -166,13 +166,13 @@ export function ShareImageModal({
       day: '2-digit', month: '2-digit',
     })
     if (venueName) {
-      ctx.fillStyle = '#e5e7eb'
-      ctx.font = 'bold 20px sans-serif'
-      ctx.fillText(venueName, rightX, 42)
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 24px sans-serif'
+      ctx.fillText(venueName, rightX, 40)
     }
-    ctx.fillStyle = '#9ca3af'
-    ctx.font = '20px sans-serif'
-    ctx.fillText(`${dateStrShort} · ${matchTime.slice(0, 5)}`, rightX, 72)
+    ctx.fillStyle = '#ffffff'
+    ctx.font = 'bold 22px sans-serif'
+    ctx.fillText(`${dateStrShort} · ${matchTime.slice(0, 5)}`, rightX, 74)
 
     // ── JUGADORES ─────────────────────────────────────────────────────────────
     // Aislamos el estado del canvas para evitar sombras/alphas previos
@@ -235,17 +235,35 @@ export function ShareImageModal({
     ctx.restore()
 
     // ── FOOTER: precio + suplentes en 2 columnas ─────────────────────────────
-    const footerY = FY + FH + goalH + 20 // debajo del arco inferior
+    const footerY = FY + FH + goalH + 52 // debajo del arco inferior, con margen generoso
 
+    // Línea separadora debajo del campo
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'
+    ctx.lineWidth = 1
+    ctx.beginPath()
+    ctx.moveTo(FX, FY + FH + goalH + 20)
+    ctx.lineTo(FX + FW, FY + FH + goalH + 20)
+    ctx.stroke()
+
+    // Precio y alias — siempre visibles si existen
     const footerParts = [
-      pricePerPlayer && `Por jugador ${pricePerPlayer}`,
-      aliasText && `Alias: ${aliasText}`,
-    ].filter(Boolean)
-    if (footerParts.length) {
-      ctx.fillStyle = '#4ade80'
-      ctx.font = 'bold 24px sans-serif'
-      ctx.textAlign = 'center'
-      ctx.fillText(footerParts.join(' · '), cx, footerY)
+      pricePerPlayer ? `⚽ Por jugador ${pricePerPlayer}` : null,
+      aliasText      ? `💳 Alias: ${aliasText}`           : null,
+    ].filter(Boolean) as string[]
+
+    ctx.textAlign = 'center'
+    ctx.font = 'bold 26px sans-serif'
+
+    if (footerParts.length === 2) {
+      // Dos líneas
+      ctx.fillStyle = '#ffffff'
+      ctx.fillText(footerParts[0], cx, footerY)
+      ctx.fillStyle = '#9ca3af'
+      ctx.font = '22px sans-serif'
+      ctx.fillText(footerParts[1], cx, footerY + 34)
+    } else if (footerParts.length === 1) {
+      ctx.fillStyle = '#ffffff'
+      ctx.fillText(footerParts[0], cx, footerY)
     }
 
     // Suplentes (sin posición asignada) → 2 columnas
@@ -255,7 +273,7 @@ export function ShareImageModal({
     const leftCol  = benchDark.length  ? benchDark  : benchAll.slice(0, Math.ceil(benchAll.length / 2))
     const rightCol = benchLight.length ? benchLight : benchAll.slice(Math.ceil(benchAll.length / 2))
 
-    const subsY = footerY + 40
+    const subsY = footerParts.length === 2 ? footerY + 70 : footerY + 40
     const lineH = 26
 
     const drawBenchCol = (
