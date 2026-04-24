@@ -191,14 +191,15 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
       onDragStart={({ active }: DragStartEvent) => setActiveId(active.id as string)}
       onDragEnd={handleDragEnd}
     >
-      {/* ── Layout desktop: dos columnas ── mobile: scroll vertical con botones fijos abajo */}
-      <div className="lg:grid lg:grid-cols-[1fr,320px] lg:gap-6 lg:h-full flex flex-col">
+      {/* ── Mobile: flex column que llena el contenedor (overflow-hidden del padre) ─────
+           ── Desktop: grid de dos columnas                                            ── */}
+      <div className="flex flex-col h-full lg:grid lg:grid-cols-[1fr,320px] lg:gap-6">
 
-        {/* Columna izquierda / contenido principal */}
-        <div className="flex flex-col gap-3 lg:flex-1 lg:min-h-0">
+        {/* ── Columna izquierda (desktop) / parte superior (mobile) ── */}
+        <div className="lg:flex lg:flex-col lg:flex-1 lg:min-h-0 shrink-0 lg:shrink">
 
           {/* Barra de estado */}
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center justify-between text-xs mb-2">
             <span className="text-text-muted font-body">
               {placedCount} en cancha · {unassigned.length} por asignar
             </span>
@@ -215,12 +216,12 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
           </div>
 
           {/* Campo */}
-          <div className="flex items-center justify-center lg:flex-1 lg:min-h-0 lg:flex lg:items-center lg:justify-center">
+          <div className="flex items-center justify-center lg:flex-1 lg:min-h-0">
             <Field slots={slots} assignments={assignments} players={players} onUnassign={unassign} />
           </div>
 
-          {/* Botones — en desktop van aquí, en mobile van fijos al final */}
-          <div className="hidden lg:flex gap-3 pt-1">
+          {/* Botones — solo desktop */}
+          <div className="hidden lg:flex gap-3 pt-3">
             <Button variant="secondary" onClick={onBack} className="flex-1">Atrás</Button>
             <Button onClick={handleFinish} loading={saving} className="flex-1" disabled={placedCount === 0}>
               Generar imagen
@@ -228,11 +229,11 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
           </div>
         </div>
 
-        {/* Side column / panel de jugadores */}
-        <div className="flex flex-col gap-4 lg:overflow-y-auto lg:pr-2 lg:pb-2 no-scrollbar mt-3 lg:mt-0">
-          {/* Jugadores sin asignar — siempre visible si hay */}
+        {/* ── Panel de jugadores: scrolleable en AMBAS vistas ── */}
+        <div className="flex-1 overflow-y-auto min-h-0 no-scrollbar flex flex-col gap-4 mt-3 lg:mt-0 pb-1">
+          {/* Jugadores sin asignar */}
           {unassigned.length > 0 && (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 shrink-0">
               <p className="text-xs font-body font-semibold uppercase tracking-widest text-text-muted">
                 Por asignar
               </p>
@@ -242,8 +243,8 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
             </div>
           )}
 
-          {/* Suplentes — siempre visibles */}
-          <div className="flex flex-col gap-6">
+          {/* Suplentes */}
+          <div className="flex flex-col gap-6 shrink-0">
             <div className="flex flex-col gap-3">
               <p className="text-xs font-body font-semibold uppercase tracking-widest text-blue-400 border-b border-blue-400/20 pb-1">Suplentes Oscuro</p>
               <div className="flex flex-col gap-2">
@@ -267,8 +268,8 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
           </div>
         </div>
 
-        {/* Botones fijos en mobile al fondo */}
-        <div className="lg:hidden flex gap-3 pt-3 pb-2 sticky bottom-0 bg-bg">
+        {/* Botones fijos en mobile — siempre visibles al fondo */}
+        <div className="lg:hidden shrink-0 flex gap-3 pt-3 pb-1 border-t border-border/40 mt-1">
           <Button variant="secondary" onClick={onBack} className="flex-1">Atrás</Button>
           <Button onClick={handleFinish} loading={saving} className="flex-1" disabled={placedCount === 0}>
             Generar imagen
