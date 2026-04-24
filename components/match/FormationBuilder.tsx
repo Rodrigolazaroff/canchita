@@ -214,8 +214,8 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
             </div>
           </div>
 
-          {/* Campo — en mobile tiene aspect-ratio fijo, en desktop llena el espacio */}
-          <div className="lg:flex-1 lg:min-h-0 lg:flex lg:items-center lg:justify-center">
+          {/* Campo — en mobile altura limitada, en desktop llena el espacio */}
+          <div className="lg:flex-1 lg:min-h-0 lg:flex lg:items-center lg:justify-center max-h-[48vh] lg:max-h-none flex items-center justify-center">
             <Field slots={slots} assignments={assignments} players={players} onUnassign={unassign} />
           </div>
 
@@ -295,7 +295,7 @@ function Field({ slots, assignments, players, onUnassign }: {
   onUnassign: (playerId: string) => void
 }) {
   return (
-    <div className="relative mx-auto w-full max-w-sm lg:max-w-none lg:w-auto lg:h-[70vh] rounded-xl overflow-hidden shadow-2xl border border-border" style={{ aspectRatio: '7/10', background: '#0d2a18' }}>
+    <div className="relative mx-auto rounded-xl overflow-hidden shadow-2xl border border-border h-full w-auto lg:w-full lg:max-w-none lg:h-[70vh]" style={{ aspectRatio: '7/10', background: '#0d2a18' }}>
       <svg className="absolute inset-0 w-full h-full" viewBox="0 0 70 100" fill="none" preserveAspectRatio="none">
         <rect x="2" y="2" width="66" height="96" stroke="#2d6a40" strokeWidth="0.8" rx="1.5"/>
         <line x1="2" y1="50" x2="68" y2="50" stroke="#2d6a40" strokeWidth="0.5" strokeDasharray="2 1.5"/>
