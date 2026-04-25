@@ -35,35 +35,35 @@ export function MatchActions({ matchId }: MatchActionsProps) {
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2">
       <Link href={`/matches/${matchId}/edit`}>
-        <Button variant="ghost" size="sm" className="text-text-muted hover:text-text-primary h-9 w-9">
-          <Pencil size={18} />
+        <Button variant="ghost" size="sm" className="text-text-muted hover:text-text-primary h-11 w-11">
+          <Pencil size={22} />
         </Button>
       </Link>
-      
+
       {!showConfirm ? (
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          className="text-text-muted hover:text-red-400 h-9 w-9"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-text-muted hover:text-red-400 h-11 w-11"
           onClick={() => setShowConfirm(true)}
         >
-          <Trash2 size={18} />
+          <Trash2 size={22} />
         </Button>
       ) : (
         <div className="flex items-center gap-1 bg-red-500/10 rounded-lg p-1 animate-in fade-in zoom-in duration-200">
-          <Button 
-            variant="ghost" 
-            className="h-7 px-2 text-[10px] uppercase tracking-wider font-bold text-red-400 hover:bg-red-500 hover:text-white"
+          <Button
+            variant="ghost"
+            className="h-9 px-3 text-xs uppercase tracking-wider font-bold text-red-400 hover:bg-red-500 hover:text-white"
             onClick={handleDelete}
             disabled={loading}
           >
             Confirmar
           </Button>
-          <Button 
-            variant="ghost" 
-            className="h-7 px-2 text-[10px] uppercase tracking-wider font-bold text-text-muted"
+          <Button
+            variant="ghost"
+            className="h-9 px-3 text-xs uppercase tracking-wider font-bold text-text-muted"
             onClick={() => setShowConfirm(false)}
             disabled={loading}
           >
