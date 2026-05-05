@@ -10,9 +10,12 @@ export function initAnalytics() {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST ?? 'https://us.i.posthog.com',
     person_profiles: 'identified_only',
-    capture_pageview: false,      // lo manejamos manual con usePageView
+    capture_pageview: false,
     capture_pageleave: true,
-    autocapture: false,           // solo eventos explícitos
+    autocapture: false,
+    disable_session_recording: true,
+    advanced_disable_feature_flags: true,   // evita 401 en /flags/
+    disable_external_dependency_loading: true, // evita 404 en CDN assets
     loaded: (ph) => {
       if (process.env.NODE_ENV === 'development') ph.debug()
     },
