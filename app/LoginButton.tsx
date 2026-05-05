@@ -36,8 +36,13 @@ export function LoginButton() {
         setLoading(false)
         return
       }
-      // Email confirmation required (Supabase default)
-      if (data.user && !data.session) {
+      // Enviar email de confirmación via Resend
+      if (data.user) {
+        await fetch('/api/emails/confirm', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, firstName: firstName.trim() }),
+        })
         toast.success('¡Cuenta creada! Revisá tu email para confirmar.')
         setLoading(false)
         setMode('login')
@@ -60,19 +65,19 @@ export function LoginButton() {
   async function handleForgot(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    const supabase = createClient()
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?type=recovery`,
-    })
-    setLoading(false)
-    if (error) {
-      const msg = error.message.toLowerCase().includes('rate')
-        ? 'Demasiados intentos. Esperá unos minutos y volvé a intentar.'
-        : 'No se pudo enviar el email. Intentá de nuevo.'
-      toast.error(msg)
-      return
+    try {
+      const res = await fetch('/api/emails/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      if (!res.ok) throw new Error()
+      setForgotSent(true)
+    } catch {
+      toast.error('No se pudo enviar el email. Intentá de nuevo.')
+    } finally {
+      setLoading(false)
     }
-    setForgotSent(true)
   }
 
   // ── Pantalla: olvidé mi contraseña ───────────────────────────────────────────
