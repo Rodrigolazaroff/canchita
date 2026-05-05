@@ -11,6 +11,7 @@ import Link from 'next/link'
 import { Calendar, MapPin, Users, Plus, ChevronRight } from 'lucide-react'
 import { MatchShareModalButton } from '@/components/match/MatchShareModalButton'
 import type { Group, Match, PlayerStats, Profile } from '@/lib/types'
+import { trackDashboardView } from '@/lib/analytics'
 
 interface DashboardClientProps {
   groups: Group[]
@@ -30,6 +31,7 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
     if (!activeGroupId || !groups.find(g => g.id === activeGroupId)) {
       setActiveGroup(groups[0].id)
     }
+    trackDashboardView()
   }, [groups])
 
   const group = activeGroup()

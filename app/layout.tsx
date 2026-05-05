@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { Toaster } from 'sonner'
+import { Suspense } from 'react'
+import { PostHogProvider } from '@/components/providers/PostHogProvider'
 
 export const metadata: Metadata = {
   title: 'Canchita — Organizá tu fútbol',
@@ -28,7 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-AR">
       <body suppressHydrationWarning>
-        {children}
+        <Suspense fallback={null}>
+          <PostHogProvider>{children}</PostHogProvider>
+        </Suspense>
         <Toaster
           theme="dark"
           position="top-center"

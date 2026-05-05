@@ -11,6 +11,7 @@ import { Plus, MoreVertical, UserCheck, UserX, Pencil, Bandage, HeartPulse, Tras
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/format'
 import type { Player } from '@/lib/types'
+import { trackPlayerAdded } from '@/lib/analytics'
 
 interface PlayersClientProps {
   players: Player[]
@@ -46,7 +47,9 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
       .single()
 
     if (error) { toast.error('Error al agregar jugador'); setLoading(false); return }
-    setPlayers(prev => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)))
+    const updatedPlayers = [...players, data]
+    setPlayers(updatedPlayers.sort((a, b) => a.name.localeCompare(b.name)))
+    trackPlayerAdded({ is_first: players.length === 0, group_id: groupId })
     setAddOpen(false)
     setForm({ name: '', isGuest: false, guestLabel: '' })
     toast.success(`${data.name} agregado`)

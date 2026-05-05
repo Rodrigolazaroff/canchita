@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card'
 import { toast } from 'sonner'
 import { Minus, Plus } from 'lucide-react'
 import type { Match, MatchPlayer } from '@/lib/types'
+import { trackStatsRecorded } from '@/lib/analytics'
 
 interface ResultClientProps {
   match: Match
@@ -69,6 +70,9 @@ export function ResultClient({ match, matchPlayers }: ResultClientProps) {
       setSaving(false)
       return
     }
+
+    const totalGoals = scoreDark + scoreLight
+    trackStatsRecorded({ match_id: match.id, goals_count: totalGoals })
 
     if (topGoalscorer) {
       toast.success(`🏆 Goleador: ${topGoalscorer.name} con ${topGoalscorer.goals} gol${topGoalscorer.goals > 1 ? 'es' : ''}!`)

@@ -13,6 +13,7 @@ import { FormationBuilder } from '@/components/match/FormationBuilder'
 import { ShareImageModal } from '@/components/match/ShareImageModal'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
 import type { Group, Player, Venue, PaymentAlias, FormationData, MatchType } from '@/lib/types'
+import { trackMatchCreated } from '@/lib/analytics'
 
 interface WizardProps {
   groups: Group[]
@@ -185,6 +186,9 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
     }))
     await supabase.from('match_players').insert(matchPlayerRows)
 
+    if (!isEditing) {
+      trackMatchCreated({ player_count: matchPlayerRows.length })
+    }
     setFormation(formationData)
     setMatchId(currentMatchId)
     setSaving(false)
