@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { PlayerCardSkeleton } from '@/components/ui/Skeleton'
 import { Card } from '@/components/ui/Card'
-import { Plus, MoreVertical, UserCheck, UserX, Pencil, Bandage, HeartPulse, Trash2 } from 'lucide-react'
+import { Plus, MoreVertical, UserCheck, UserX, Pencil, Bandage, HeartPulse, Trash2, BarChart2, Minus } from 'lucide-react'
+import { saveImportedStats } from '@/lib/actions/metrics'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/format'
 import type { Player } from '@/lib/types'
@@ -24,6 +25,8 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
   const [addOpen, setAddOpen] = useState(false)
   const [editPlayer, setEditPlayer] = useState<Player | null>(null)
   const [menuPlayer, setMenuPlayer] = useState<Player | null>(null)
+  const [importOpen, setImportOpen] = useState(false)
+  const [importValues, setImportValues] = useState<Record<string, { matches: number; goals: number }>>({})
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({ name: '', isGuest: false, guestLabel: '' })
 
@@ -134,6 +137,46 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
     setMenuPlayer(null)
   }
 
+  function openImport() {
+    const initial: Record<string, { matches: number; goals: number }> = {}
+    players.filter(p => p.is_active).forEach(p => {
+      initial[p.id] = {
+        matches: p.imported_matches ?? 0,
+        goals:   p.imported_goals   ?? 0,
+      }
+    })
+    setImportValues(initial)
+    setImportOpen(true)
+  }
+
+  function adjustImport(playerId: string, field: 'matches' | 'goals', delta: number) {
+    setImportValues(prev => ({
+      ...prev,
+      [playerId]: {
+        ...prev[playerId],
+        [field]: Math.max(0, (prev[playerId]?.[field] ?? 0) + delta),
+      },
+    }))
+  }
+
+  async function handleImport() {
+    setLoading(true)
+    const activePlayers = players.filter(p => p.is_active)
+    await Promise.all(
+      activePlayers.map(p =>
+        saveImportedStats(p.id, importValues[p.id]?.matches ?? 0, importValues[p.id]?.goals ?? 0)
+      )
+    )
+    setPlayers(prev => prev.map(p => ({
+      ...p,
+      imported_matches: importValues[p.id]?.matches ?? p.imported_matches ?? 0,
+      imported_goals:   importValues[p.id]?.goals   ?? p.imported_goals   ?? 0,
+    })))
+    setImportOpen(false)
+    toast.success('Estadísticas previas guardadas')
+    setLoading(false)
+  }
+
   function openAdd() {
     setForm({ name: '', isGuest: false, guestLabel: '' })
     setAddOpen(true)
@@ -143,9 +186,16 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-2xl text-text-primary">Jugadores</h1>
-        <Button size="sm" onClick={openAdd}>
-          <Plus size={16} /> Agregar
-        </Button>
+        <div className="flex items-center gap-2">
+          {active.length > 0 && (
+            <Button size="sm" variant="ghost" onClick={openImport}>
+              <BarChart2 size={16} /> Stats previas
+            </Button>
+          )}
+          <Button size="sm" onClick={openAdd}>
+            <Plus size={16} /> Agregar
+          </Button>
+        </div>
       </div>
 
       {/* Active players */}
@@ -183,6 +233,40 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
       {/* Edit modal */}
       <Modal open={!!editPlayer} onClose={() => setEditPlayer(null)} title="Editar jugador">
         <PlayerForm form={form} onChange={setForm} onSubmit={handleEdit} loading={loading} submitLabel="Guardar" />
+      </Modal>
+
+      {/* Bulk import stats modal */}
+      <Modal open={importOpen} onClose={() => setImportOpen(false)} title="Estadísticas previas" className="sm:max-w-2xl overflow-hidden flex flex-col">
+        <div className="flex flex-col gap-3 min-h-0 flex-1">
+          <p className="font-body text-sm text-text-muted">
+            Cargá los partidos y goles que cada jugador tenía antes de usar la app. Se suman a las estadísticas actuales.
+          </p>
+          <div className="flex items-center justify-end gap-6 px-1 pb-1 border-b border-border">
+            <span className="font-body text-xs text-text-muted uppercase tracking-wider w-20 text-center">PJ</span>
+            <span className="font-body text-xs text-text-muted uppercase tracking-wider w-20 text-center">Goles</span>
+          </div>
+          <div className="flex flex-col gap-3 overflow-y-auto no-scrollbar" style={{ maxHeight: 'calc(70vh - 200px)' }}>
+            {active.map(player => (
+              <div key={player.id} className="flex items-center gap-3">
+                <PlayerAvatar name={player.name} id={player.id} photoUrl={player.photo_url} size={36} />
+                <span className="flex-1 font-body text-sm text-text-primary truncate">{player.name}</span>
+                <StatStepper
+                  value={importValues[player.id]?.matches ?? 0}
+                  onDecrement={() => adjustImport(player.id, 'matches', -1)}
+                  onIncrement={() => adjustImport(player.id, 'matches', +1)}
+                />
+                <StatStepper
+                  value={importValues[player.id]?.goals ?? 0}
+                  onDecrement={() => adjustImport(player.id, 'goals', -1)}
+                  onIncrement={() => adjustImport(player.id, 'goals', +1)}
+                />
+              </div>
+            ))}
+          </div>
+          <Button onClick={handleImport} loading={loading} className="w-full mt-2">
+            Guardar estadísticas
+          </Button>
+        </div>
       </Modal>
 
       {/* Context menu */}
@@ -272,6 +356,30 @@ function PlayerRow({ player, onMenu }: { player: Player; onMenu: () => void }) {
       </span>
       <button onClick={onMenu} className="p-1 text-text-muted hover:text-text-primary">
         <MoreVertical size={18} />
+      </button>
+    </div>
+  )
+}
+
+function StatStepper({ value, onDecrement, onIncrement }: {
+  value: number
+  onDecrement: () => void
+  onIncrement: () => void
+}) {
+  return (
+    <div className="flex items-center gap-1 w-16 justify-center">
+      <button
+        onClick={onDecrement}
+        className="w-6 h-6 flex items-center justify-center rounded-lg bg-border hover:bg-border/80 text-text-muted"
+      >
+        <Minus size={12} />
+      </button>
+      <span className="w-6 text-center font-body text-sm text-text-primary tabular-nums">{value}</span>
+      <button
+        onClick={onIncrement}
+        className="w-6 h-6 flex items-center justify-center rounded-lg bg-border hover:bg-border/80 text-text-muted"
+      >
+        <Plus size={12} />
       </button>
     </div>
   )

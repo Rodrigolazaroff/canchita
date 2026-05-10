@@ -31,6 +31,8 @@ export interface Player {
   is_active: boolean
   is_injured?: boolean
   active_injury_start?: string | null
+  imported_matches?: number
+  imported_goals?: number
   created_at: string
 }
 
@@ -229,6 +231,10 @@ export interface PlayerMetricsInput {
    * evitando que una lesión pre-temporada infle el contador.
    */
   season_start_date?: string
+  /** Partidos jugados importados de herramientas externas. */
+  imported_matches?: number
+  /** Goles importados de herramientas externas. */
+  imported_goals?: number
 }
 
 // ─── Temporadas ───────────────────────────────────────────────────────────────

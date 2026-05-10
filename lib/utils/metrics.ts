@@ -215,10 +215,12 @@ export function calcPlayerMetrics(input: PlayerMetricsInput): PlayerMetrics {
     injury_history,
     match_snapshots,
     season_total_matches,
+    imported_matches = 0,
+    imported_goals = 0,
   } = input
 
-  const total_goals     = calcTotalGoals(match_snapshots)
-  const matches_played  = calcMatchesPlayed(match_snapshots)
+  const total_goals     = calcTotalGoals(match_snapshots) + imported_goals
+  const matches_played  = calcMatchesPlayed(match_snapshots) + imported_matches
   const goal_average    = calcGoalAverage(total_goals, matches_played)
 
   const attendance_pct      = calcAttendancePct(matches_played, season_total_matches)

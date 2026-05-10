@@ -39,7 +39,7 @@ export async function getPlayerMetrics(playerId: string): Promise<PlayerMetrics 
   const [playerRes, snapshotsRes, injuriesRes] = await Promise.all([
     supabase
       .from('players')
-      .select('id, name, group_id, is_injured, active_injury_start')
+      .select('id, name, group_id, is_injured, active_injury_start, imported_matches, imported_goals')
       .eq('id', playerId)
       .single(),
 
@@ -78,6 +78,8 @@ export async function getPlayerMetrics(playerId: string): Promise<PlayerMetrics 
     injury_history:       (injuriesRes.data ?? []) as InjuryRecord[],
     match_snapshots:      snapshots,
     season_total_matches: totalData ?? 0,
+    imported_matches:     player.imported_matches ?? 0,
+    imported_goals:       player.imported_goals ?? 0,
   }
 
   return calcPlayerMetrics(input)
@@ -174,6 +176,26 @@ export async function saveMatchResult(
   }
 
   return { error: null }
+}
+
+// ─── Importar estadísticas históricas ────────────────────────────────────────
+
+export async function saveImportedStats(
+  playerId: string,
+  importedMatches: number,
+  importedGoals: number,
+): Promise<{ error: string | null }> {
+  const supabase = createClient()
+
+  const { error } = await supabase
+    .from('players')
+    .update({
+      imported_matches: Math.max(0, Math.round(importedMatches)),
+      imported_goals:   Math.max(0, Math.round(importedGoals)),
+    })
+    .eq('id', playerId)
+
+  return { error: error?.message ?? null }
 }
 
 // ─── Marcar / levantar lesión ─────────────────────────────────────────────────
