@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import { PostHogProvider } from '@/components/providers/PostHogProvider'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://canchita-sigma.vercel.app'),
   title: 'Canchita — Organizá tu fútbol',
   description: 'Organizá tu fútbol amateur en minutos. Armá la formación, compartí por WhatsApp.',
   manifest: '/manifest.json',
@@ -13,17 +14,11 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'Canchita',
   },
-  icons: {
-    icon: '/logo.jpg',
-    shortcut: '/logo.jpg',
-    apple: '/logo.jpg',
-  },
   openGraph: {
     title: 'Canchita — Organizá tu fútbol',
     description: 'Organizá tu fútbol amateur en minutos. Armá la formación, compartí por WhatsApp.',
     url: 'https://canchita-sigma.vercel.app',
     siteName: 'Canchita',
-    images: [{ url: '/logo.jpg', width: 1254, height: 1254, alt: 'Canchita' }],
     locale: 'es_AR',
     type: 'website',
   },
@@ -31,7 +26,6 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Canchita — Organizá tu fútbol',
     description: 'Organizá tu fútbol amateur en minutos. Armá la formación, compartí por WhatsApp.',
-    images: ['/logo.jpg'],
   },
 }
 
