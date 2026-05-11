@@ -14,7 +14,24 @@ export const metadata: Metadata = {
     title: 'Canchita',
   },
   icons: {
-    apple: '/icons/icon-192.png',
+    icon: '/logo.jpg',
+    shortcut: '/logo.jpg',
+    apple: '/logo.jpg',
+  },
+  openGraph: {
+    title: 'Canchita — Organizá tu fútbol',
+    description: 'Organizá tu fútbol amateur en minutos. Armá la formación, compartí por WhatsApp.',
+    url: 'https://canchita-sigma.vercel.app',
+    siteName: 'Canchita',
+    images: [{ url: '/logo.jpg', width: 1254, height: 1254, alt: 'Canchita' }],
+    locale: 'es_AR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Canchita — Organizá tu fútbol',
+    description: 'Organizá tu fútbol amateur en minutos. Armá la formación, compartí por WhatsApp.',
+    images: ['/logo.jpg'],
   },
 }
 
