@@ -26,60 +26,119 @@ interface Slot {
   y: number
 }
 
-const POSITIONS: Record<MatchType, Slot[]> = {
+function buildFormation(name: string, dark: { id: string; x: number; y: number }[]): { name: string; slots: Slot[] } {
+  const darkSlots: Slot[] = dark.map(s => ({ ...s, team: 'dark' as Team }))
+  const lightSlots: Slot[] = dark.map(s => ({
+    id: s.id.replace('d-', 'l-'),
+    team: 'light' as Team,
+    x: 1 - s.x,
+    y: s.y,
+  }))
+  return { name, slots: [...darkSlots, ...lightSlots] }
+}
+
+// y positions standardized by group size so equal-sized lines always share the same rows
+const Y1 = [0.5]
+const Y2 = [0.28, 0.72]
+const Y3 = [0.17, 0.5, 0.83]
+const Y4 = [0.1, 0.37, 0.63, 0.9]
+
+const FORMATIONS: Record<MatchType, { name: string; slots: Slot[] }[]> = {
   futbol5: [
-    { id: 'd-gk', team: 'dark', x: 0.5, y: 0.06 },
-    { id: 'd-dl', team: 'dark', x: 0.25, y: 0.2 },
-    { id: 'd-dr', team: 'dark', x: 0.75, y: 0.2 },
-    { id: 'd-mid', team: 'dark', x: 0.5, y: 0.32 },
-    { id: 'd-fwd', team: 'dark', x: 0.5, y: 0.44 },
-    { id: 'l-fwd', team: 'light', x: 0.5, y: 0.56 },
-    { id: 'l-mid', team: 'light', x: 0.5, y: 0.68 },
-    { id: 'l-dl', team: 'light', x: 0.25, y: 0.8 },
-    { id: 'l-dr', team: 'light', x: 0.75, y: 0.8 },
-    { id: 'l-gk', team: 'light', x: 0.5, y: 0.94 },
+    buildFormation('1-2-1', [
+      { id: 'd-gk',  x: 0.05, y: Y1[0] },
+      { id: 'd-d1',  x: 0.2,  y: Y1[0] },
+      { id: 'd-m1',  x: 0.33, y: Y2[0] },
+      { id: 'd-m2',  x: 0.33, y: Y2[1] },
+      { id: 'd-f1',  x: 0.44, y: Y1[0] },
+    ]),
+    buildFormation('2-2', [
+      { id: 'd-gk',  x: 0.05, y: Y1[0] },
+      { id: 'd-d1',  x: 0.22, y: Y2[0] },
+      { id: 'd-d2',  x: 0.22, y: Y2[1] },
+      { id: 'd-f1',  x: 0.4,  y: Y2[0] },
+      { id: 'd-f2',  x: 0.4,  y: Y2[1] },
+    ]),
+    buildFormation('2-1-1', [
+      { id: 'd-gk',  x: 0.05, y: Y1[0] },
+      { id: 'd-d1',  x: 0.2,  y: Y2[0] },
+      { id: 'd-d2',  x: 0.2,  y: Y2[1] },
+      { id: 'd-m1',  x: 0.33, y: Y1[0] },
+      { id: 'd-f1',  x: 0.44, y: Y1[0] },
+    ]),
   ],
   futbol8: [
-    { id: 'd-gk', team: 'dark', x: 0.5, y: 0.04 },
-    { id: 'd-dl', team: 'dark', x: 0.2, y: 0.17 },
-    { id: 'd-dc', team: 'dark', x: 0.5, y: 0.17 },
-    { id: 'd-dr', team: 'dark', x: 0.8, y: 0.17 },
-    { id: 'd-ml', team: 'dark', x: 0.3, y: 0.3 },
-    { id: 'd-mr', team: 'dark', x: 0.7, y: 0.3 },
-    { id: 'd-fl', team: 'dark', x: 0.35, y: 0.43 },
-    { id: 'd-fr', team: 'dark', x: 0.65, y: 0.43 },
-    { id: 'l-fl', team: 'light', x: 0.35, y: 0.57 },
-    { id: 'l-fr', team: 'light', x: 0.65, y: 0.57 },
-    { id: 'l-ml', team: 'light', x: 0.3, y: 0.7 },
-    { id: 'l-mr', team: 'light', x: 0.7, y: 0.7 },
-    { id: 'l-dl', team: 'light', x: 0.2, y: 0.83 },
-    { id: 'l-dc', team: 'light', x: 0.5, y: 0.83 },
-    { id: 'l-dr', team: 'light', x: 0.8, y: 0.83 },
-    { id: 'l-gk', team: 'light', x: 0.5, y: 0.96 },
+    buildFormation('2-3-2', [
+      { id: 'd-gk',  x: 0.04, y: Y1[0] },
+      { id: 'd-d1',  x: 0.15, y: Y2[0] },
+      { id: 'd-d2',  x: 0.15, y: Y2[1] },
+      { id: 'd-m1',  x: 0.27, y: Y3[0] },
+      { id: 'd-m2',  x: 0.27, y: Y3[1] },
+      { id: 'd-m3',  x: 0.27, y: Y3[2] },
+      { id: 'd-f1',  x: 0.4,  y: Y2[0] },
+      { id: 'd-f2',  x: 0.4,  y: Y2[1] },
+    ]),
+    buildFormation('3-3-1', [
+      { id: 'd-gk',  x: 0.04, y: Y1[0] },
+      { id: 'd-d1',  x: 0.15, y: Y3[0] },
+      { id: 'd-d2',  x: 0.15, y: Y3[1] },
+      { id: 'd-d3',  x: 0.15, y: Y3[2] },
+      { id: 'd-m1',  x: 0.29, y: Y3[0] },
+      { id: 'd-m2',  x: 0.29, y: Y3[1] },
+      { id: 'd-m3',  x: 0.29, y: Y3[2] },
+      { id: 'd-f1',  x: 0.42, y: Y1[0] },
+    ]),
+    buildFormation('3-2-2', [
+      { id: 'd-gk',  x: 0.04, y: Y1[0] },
+      { id: 'd-d1',  x: 0.14, y: Y3[0] },
+      { id: 'd-d2',  x: 0.14, y: Y3[1] },
+      { id: 'd-d3',  x: 0.14, y: Y3[2] },
+      { id: 'd-m1',  x: 0.28, y: Y2[0] },
+      { id: 'd-m2',  x: 0.28, y: Y2[1] },
+      { id: 'd-f1',  x: 0.41, y: Y2[0] },
+      { id: 'd-f2',  x: 0.41, y: Y2[1] },
+    ]),
   ],
   futbol11: [
-    { id: 'd-gk', team: 'dark', x: 0.5, y: 0.04 },
-    { id: 'd-d1', team: 'dark', x: 0.12, y: 0.15 },
-    { id: 'd-d2', team: 'dark', x: 0.35, y: 0.17 },
-    { id: 'd-d3', team: 'dark', x: 0.65, y: 0.17 },
-    { id: 'd-d4', team: 'dark', x: 0.88, y: 0.15 },
-    { id: 'd-m1', team: 'dark', x: 0.22, y: 0.28 },
-    { id: 'd-m2', team: 'dark', x: 0.5, y: 0.3 },
-    { id: 'd-m3', team: 'dark', x: 0.78, y: 0.28 },
-    { id: 'd-f1', team: 'dark', x: 0.22, y: 0.42 },
-    { id: 'd-f2', team: 'dark', x: 0.5, y: 0.44 },
-    { id: 'd-f3', team: 'dark', x: 0.78, y: 0.42 },
-    { id: 'l-f1', team: 'light', x: 0.22, y: 0.58 },
-    { id: 'l-f2', team: 'light', x: 0.5, y: 0.56 },
-    { id: 'l-f3', team: 'light', x: 0.78, y: 0.58 },
-    { id: 'l-m1', team: 'light', x: 0.22, y: 0.72 },
-    { id: 'l-m2', team: 'light', x: 0.5, y: 0.7 },
-    { id: 'l-m3', team: 'light', x: 0.78, y: 0.72 },
-    { id: 'l-d1', team: 'light', x: 0.12, y: 0.85 },
-    { id: 'l-d2', team: 'light', x: 0.35, y: 0.83 },
-    { id: 'l-d3', team: 'light', x: 0.65, y: 0.83 },
-    { id: 'l-d4', team: 'light', x: 0.88, y: 0.85 },
-    { id: 'l-gk', team: 'light', x: 0.5, y: 0.96 },
+    buildFormation('4-4-2', [
+      { id: 'd-gk',  x: 0.04, y: Y1[0] },
+      { id: 'd-d1',  x: 0.13, y: Y4[0] },
+      { id: 'd-d2',  x: 0.13, y: Y4[1] },
+      { id: 'd-d3',  x: 0.13, y: Y4[2] },
+      { id: 'd-d4',  x: 0.13, y: Y4[3] },
+      { id: 'd-m1',  x: 0.27, y: Y4[0] },
+      { id: 'd-m2',  x: 0.27, y: Y4[1] },
+      { id: 'd-m3',  x: 0.27, y: Y4[2] },
+      { id: 'd-m4',  x: 0.27, y: Y4[3] },
+      { id: 'd-f1',  x: 0.41, y: Y2[0] },
+      { id: 'd-f2',  x: 0.41, y: Y2[1] },
+    ]),
+    buildFormation('4-3-3', [
+      { id: 'd-gk',  x: 0.04, y: Y1[0] },
+      { id: 'd-d1',  x: 0.13, y: Y4[0] },
+      { id: 'd-d2',  x: 0.13, y: Y4[1] },
+      { id: 'd-d3',  x: 0.13, y: Y4[2] },
+      { id: 'd-d4',  x: 0.13, y: Y4[3] },
+      { id: 'd-m1',  x: 0.27, y: Y3[0] },
+      { id: 'd-m2',  x: 0.27, y: Y3[1] },
+      { id: 'd-m3',  x: 0.27, y: Y3[2] },
+      { id: 'd-f1',  x: 0.41, y: Y3[0] },
+      { id: 'd-f2',  x: 0.41, y: Y3[1] },
+      { id: 'd-f3',  x: 0.41, y: Y3[2] },
+    ]),
+    buildFormation('4-3-1-2', [
+      { id: 'd-gk',  x: 0.04, y: Y1[0] },
+      { id: 'd-d1',  x: 0.12, y: Y4[0] },
+      { id: 'd-d2',  x: 0.12, y: Y4[1] },
+      { id: 'd-d3',  x: 0.12, y: Y4[2] },
+      { id: 'd-d4',  x: 0.12, y: Y4[3] },
+      { id: 'd-m1',  x: 0.24, y: Y3[0] },
+      { id: 'd-m2',  x: 0.24, y: Y3[1] },
+      { id: 'd-m3',  x: 0.24, y: Y3[2] },
+      { id: 'd-a1',  x: 0.36, y: Y1[0] },
+      { id: 'd-f1',  x: 0.43, y: Y2[0] },
+      { id: 'd-f2',  x: 0.43, y: Y2[1] },
+    ]),
   ],
 }
 
@@ -94,9 +153,47 @@ interface FormationBuilderProps {
 }
 
 export function FormationBuilder({ players, matchType, onBack, onFinish, saving }: FormationBuilderProps) {
-  const slots = POSITIONS[matchType]
+  const [selectedFormationDark, setSelectedFormationDark] = useState(0)
+  const [selectedFormationLight, setSelectedFormationLight] = useState(0)
+  const darkSlots  = FORMATIONS[matchType][selectedFormationDark].slots.filter(s => s.team === 'dark')
+  const lightSlots = FORMATIONS[matchType][selectedFormationLight].slots.filter(s => s.team === 'light')
+  const slots = [...darkSlots, ...lightSlots]
   const [assignments, setAssignments] = useState<Record<string, string>>({})
   const [activeId, setActiveId] = useState<string | null>(null)
+
+  function changeFormationDark(idx: number) {
+    const oldDark = FORMATIONS[matchType][selectedFormationDark].slots.filter(s => s.team === 'dark')
+    const newDark = FORMATIONS[matchType][idx].slots.filter(s => s.team === 'dark')
+    const next: Record<string, string> = {}
+    newDark.forEach((slot, i) => {
+      const prev = oldDark[i]
+      if (prev && assignments[prev.id]) next[slot.id] = assignments[prev.id]
+    })
+    lightSlots.forEach(slot => { if (assignments[slot.id]) next[slot.id] = assignments[slot.id] })
+    for (let i = 0; i < BENCH_PER_TEAM; i++) {
+      if (assignments[`bench-dark-${i}`])  next[`bench-dark-${i}`]  = assignments[`bench-dark-${i}`]
+      if (assignments[`bench-light-${i}`]) next[`bench-light-${i}`] = assignments[`bench-light-${i}`]
+    }
+    setSelectedFormationDark(idx)
+    setAssignments(next)
+  }
+
+  function changeFormationLight(idx: number) {
+    const oldLight = FORMATIONS[matchType][selectedFormationLight].slots.filter(s => s.team === 'light')
+    const newLight = FORMATIONS[matchType][idx].slots.filter(s => s.team === 'light')
+    const next: Record<string, string> = {}
+    darkSlots.forEach(slot => { if (assignments[slot.id]) next[slot.id] = assignments[slot.id] })
+    newLight.forEach((slot, i) => {
+      const prev = oldLight[i]
+      if (prev && assignments[prev.id]) next[slot.id] = assignments[prev.id]
+    })
+    for (let i = 0; i < BENCH_PER_TEAM; i++) {
+      if (assignments[`bench-dark-${i}`])  next[`bench-dark-${i}`]  = assignments[`bench-dark-${i}`]
+      if (assignments[`bench-light-${i}`]) next[`bench-light-${i}`] = assignments[`bench-light-${i}`]
+    }
+    setSelectedFormationLight(idx)
+    setAssignments(next)
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -198,20 +295,58 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
         {/* ── Columna izquierda (desktop) / parte superior (mobile) ── */}
         <div className="lg:flex lg:flex-col lg:flex-1 lg:min-h-0 shrink-0 lg:shrink">
 
-          {/* Barra de estado */}
-          <div className="flex items-center justify-between text-xs mb-2">
-            <span className="text-text-muted font-body">
-              {placedCount} en cancha · {unassigned.length} por asignar
-            </span>
-            <div className="flex items-center gap-3">
-              <button onClick={randomize} className="text-green-light font-body flex items-center gap-1">
-                <Shuffle size={12} /> Aleatorizar
-              </button>
-              {Object.keys(assignments).length > 0 && (
-                <button onClick={() => setAssignments({})} className="text-text-muted hover:text-red-400 font-body flex items-center gap-1">
-                  <RotateCcw size={12} /> Limpiar
+          {/* Formaciones (fila superior) + estado/acciones (fila inferior) */}
+          <div className="flex items-start justify-between gap-2 mb-2">
+            {/* Izquierda: pills oscuro + estado */}
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1">
+                {FORMATIONS[matchType].map((f, i) => (
+                  <button
+                    key={f.name}
+                    onClick={() => changeFormationDark(i)}
+                    className={cn(
+                      'px-2.5 py-0.5 rounded-full text-xs font-body font-semibold border transition-colors',
+                      selectedFormationDark === i
+                        ? 'bg-blue-700 border-blue-700 text-white'
+                        : 'bg-surface border-border text-text-muted hover:border-blue-400/40'
+                    )}
+                  >
+                    {f.name}
+                  </button>
+                ))}
+              </div>
+              <span className="text-xs text-text-muted font-body">
+                {placedCount} en cancha · {unassigned.length} por asignar
+              </span>
+            </div>
+            {/* Derecha: pills claro + aleatorizar/limpiar */}
+            <div className="flex flex-col gap-1 items-end">
+              <div className="flex items-center gap-1">
+                {FORMATIONS[matchType].map((f, i) => (
+                  <button
+                    key={f.name}
+                    onClick={() => changeFormationLight(i)}
+                    className={cn(
+                      'px-2.5 py-0.5 rounded-full text-xs font-body font-semibold border transition-colors',
+                      selectedFormationLight === i
+                        ? 'bg-slate-300 border-slate-300 text-black'
+                        : 'bg-surface border-border text-text-muted hover:border-white/20'
+                    )}
+                  >
+                    {f.name}
+                  </button>
+                ))}
+              </div>
+              <div className="flex items-center gap-3">
+                <button onClick={randomize} className="text-green-light font-body flex items-center gap-1 text-xs">
+                  <Shuffle size={12} /> Aleatorizar
                 </button>
-              )}
+                {Object.keys(assignments).length > 0 && (
+                  <button onClick={() => setAssignments({})} className="text-text-muted hover:text-red-400 font-body flex items-center gap-1 text-xs">
+                    <RotateCcw size={12} /> Limpiar
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -296,20 +431,61 @@ function Field({ slots, assignments, players, onUnassign }: {
   onUnassign: (playerId: string) => void
 }) {
   return (
-    <div className="relative mx-auto rounded-xl overflow-hidden shadow-2xl border border-border lg:w-auto lg:h-[70vh]" style={{ aspectRatio: '7/10', height: 'min(46vh, 380px)', background: '#0d2a18' }}>
-      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 70 100" fill="none" preserveAspectRatio="none">
-        <rect x="2" y="2" width="66" height="96" stroke="#2d6a40" strokeWidth="0.8" rx="1.5"/>
-        <line x1="2" y1="50" x2="68" y2="50" stroke="#2d6a40" strokeWidth="0.5" strokeDasharray="2 1.5"/>
-        <circle cx="35" cy="50" r="7" stroke="#2d6a40" strokeWidth="0.5" fill="none"/>
-        <rect x="17" y="2" width="36" height="10" stroke="#2d6a40" strokeWidth="0.5"/>
-        <rect x="17" y="88" width="36" height="10" stroke="#2d6a40" strokeWidth="0.5"/>
+    <div className="flex flex-col items-center gap-2 mx-auto" style={{ width: 'min(100%, 660px)' }}>
+    <div className="relative w-full rounded-xl overflow-hidden shadow-2xl border border-border" style={{ aspectRatio: '3/2' }}>
+      <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 70" fill="none" preserveAspectRatio="none">
+        <defs>
+          <pattern id="grass" x="0" y="0" width="8" height="70" patternUnits="userSpaceOnUse">
+            <rect width="4" height="70" fill="#1d6b2f"/>
+            <rect x="4" width="4" height="70" fill="#1a6129"/>
+          </pattern>
+        </defs>
+
+        {/* Fondo verde rayado */}
+        <rect width="100" height="70" fill="url(#grass)"/>
+
+        {/* Borde del campo */}
+        <rect x="2" y="2" width="96" height="66" stroke="white" strokeWidth="0.5" fill="none"/>
+
+        {/* Línea del medio */}
+        <line x1="50" y1="2" x2="50" y2="68" stroke="white" strokeWidth="0.5"/>
+
+        {/* Círculo central */}
+        <circle cx="50" cy="35" r="9" stroke="white" strokeWidth="0.5" fill="none"/>
+        <circle cx="50" cy="35" r="0.6" fill="white"/>
+
+        {/* Área grande izquierda */}
+        <rect x="2" y="15.5" width="15" height="39" stroke="white" strokeWidth="0.5" fill="none"/>
+        {/* Área chica izquierda */}
+        <rect x="2" y="26" width="5" height="18" stroke="white" strokeWidth="0.5" fill="none"/>
+        {/* Punto de penal izquierdo */}
+        <circle cx="12" cy="35" r="0.6" fill="white"/>
+        {/* Semicírculo penal izquierdo */}
+        <path d="M 17 28.1 A 8.5 8.5 0 0 1 17 41.9" stroke="white" strokeWidth="0.5" fill="none"/>
+        {/* Arcos de esquina izquierdos */}
+        <path d="M 4.5 2 A 2.5 2.5 0 0 1 2 4.5" stroke="white" strokeWidth="0.5" fill="none"/>
+        <path d="M 2 65.5 A 2.5 2.5 0 0 1 4.5 68" stroke="white" strokeWidth="0.5" fill="none"/>
+
+        {/* Área grande derecha */}
+        <rect x="83" y="15.5" width="15" height="39" stroke="white" strokeWidth="0.5" fill="none"/>
+        {/* Área chica derecha */}
+        <rect x="93" y="26" width="5" height="18" stroke="white" strokeWidth="0.5" fill="none"/>
+        {/* Punto de penal derecho */}
+        <circle cx="88" cy="35" r="0.6" fill="white"/>
+        {/* Semicírculo penal derecho */}
+        <path d="M 83 28.1 A 8.5 8.5 0 0 0 83 41.9" stroke="white" strokeWidth="0.5" fill="none"/>
+        {/* Arcos de esquina derechos */}
+        <path d="M 95.5 2 A 2.5 2.5 0 0 0 98 4.5" stroke="white" strokeWidth="0.5" fill="none"/>
+        <path d="M 98 65.5 A 2.5 2.5 0 0 0 95.5 68" stroke="white" strokeWidth="0.5" fill="none"/>
+
+        {/* Arcos de esquina izquierda adicionales ya arriba */}
+
+        {/* Arco del arco (portería) izquierda */}
+        <rect x="0" y="31" width="2" height="8" stroke="white" strokeWidth="0.5" fill="#155222"/>
+        {/* Portería derecha */}
+        <rect x="98" y="31" width="2" height="8" stroke="white" strokeWidth="0.5" fill="#155222"/>
       </svg>
-      <div className="absolute top-1 left-0 right-0 text-center pointer-events-none">
-        <span className="text-[10px] font-body text-blue-400/40 uppercase tracking-widest font-bold">Oscuro</span>
-      </div>
-      <div className="absolute bottom-1 left-0 right-0 text-center pointer-events-none">
-        <span className="text-[10px] font-body text-text-primary/30 uppercase tracking-widest font-bold">Claro</span>
-      </div>
+
       {slots.map(slot => {
         const player = players.find(p => p.id === assignments[slot.id])
         return (
@@ -321,6 +497,16 @@ function Field({ slots, assignments, players, onUnassign }: {
           />
         )
       })}
+    </div>
+    {/* Etiquetas debajo de la cancha */}
+    <div className="flex w-full">
+      <div className="flex-1 flex justify-center">
+        <span className="text-xs font-body text-blue-400/70 uppercase tracking-widest font-bold">Oscuro</span>
+      </div>
+      <div className="flex-1 flex justify-center">
+        <span className="text-xs font-body text-white/50 uppercase tracking-widest font-bold">Claro</span>
+      </div>
+    </div>
     </div>
   )
 }

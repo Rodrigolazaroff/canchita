@@ -8,7 +8,7 @@ import { PlayerAvatar } from '@/components/player/PlayerAvatar'
 import { MatchCardSkeleton } from '@/components/ui/Skeleton'
 import { formatDate, formatTime, formatDayOfWeek, closestUpcomingDay, pricePerPlayer, cn } from '@/lib/utils/format'
 import Link from 'next/link'
-import { Calendar, MapPin, Users, Plus, ChevronRight } from 'lucide-react'
+import { Calendar, MapPin, Users, Plus, ChevronRight, BarChart2 } from 'lucide-react'
 import { MatchShareModalButton } from '@/components/match/MatchShareModalButton'
 import type { Group, Match, PlayerStats, Profile } from '@/lib/types'
 import { trackDashboardView } from '@/lib/analytics'
@@ -24,6 +24,7 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
   const [topPlayers, setTopPlayers] = useState<PlayerStats[]>([])
   const [loading, setLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
+  const showImportBanner = true
 
   useEffect(() => {
     setMounted(true)
@@ -32,6 +33,7 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
       setActiveGroup(groups[0].id)
     }
     trackDashboardView()
+
   }, [groups])
 
   const group = activeGroup()
@@ -138,7 +140,7 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
           ) : (
             <Card className="flex flex-col items-center gap-4 py-8">
               <div className="w-16 h-16 rounded-full bg-border flex items-center justify-center">
-                <Calendar size={28} className="text-text-muted" />
+                <Calendar size={28} className="text-white" />
               </div>
               <div className="text-center">
                 <p className="font-body text-text-secondary">No hay partido programado</p>
@@ -179,6 +181,23 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
             </Link>
           </div>
         </section>
+
+        {/* Banner: estadísticas previas */}
+        {showImportBanner && (
+          <div className="flex items-start gap-3 bg-green-primary/10 border border-green-primary/30 rounded-2xl p-4">
+            <BarChart2 size={20} className="text-green-light mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="font-body text-sm text-text-primary font-semibold">¿Tenés estadísticas de antes?</p>
+              <p className="font-body text-sm text-text-muted mt-0.5">
+                Cargalas en{' '}
+                <Link href={`/groups/${group.id}/players`} className="text-green-light underline underline-offset-2">
+                  Jugadores → Importar estadísticas
+                </Link>
+                {' '}y se suman solas a las actuales.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Sidebar de jugadores en desktop */}

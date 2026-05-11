@@ -98,6 +98,7 @@ export function ShareImageModal({
     ctx.fill()
 
     // ── Área grande arriba ────────────────────────────────────────────────────
+    const penaltyOffset = 110
     const bigAreaW = 420, bigAreaH = 155
     ctx.strokeRect(cx - bigAreaW / 2, FY, bigAreaW, bigAreaH)
 
@@ -111,12 +112,19 @@ export function ShareImageModal({
     // ── Área chica abajo ──────────────────────────────────────────────────────
     ctx.strokeRect(cx - smallAreaW / 2, FY + FH - smallAreaH, smallAreaW, smallAreaH)
 
-    // ── Arcos de penales (semicírculos fuera del área grande) ─────────────────
+    // ── Arcos de penales (la "D" fuera del área grande) ───────────────────────
+    // Arco centrado en el punto de penal; los extremos tocan exactamente el
+    // borde del área grande. El ángulo medio = acos(distancia_borde / radio).
+    const arcR = 70
+    const distToArea = bigAreaH - penaltyOffset
+    const half = Math.acos(distToArea / arcR)
+    // Arriba: el arco abre hacia abajo (alejándose del arco superior)
     ctx.beginPath()
-    ctx.arc(cx, FY + bigAreaH, 70, Math.PI, Math.PI * 2)
+    ctx.arc(cx, FY + penaltyOffset, arcR, Math.PI / 2 - half, Math.PI / 2 + half)
     ctx.stroke()
+    // Abajo: el arco abre hacia arriba (alejándose del arco inferior)
     ctx.beginPath()
-    ctx.arc(cx, FY + FH - bigAreaH, 70, 0, Math.PI)
+    ctx.arc(cx, FY + FH - penaltyOffset, arcR, -Math.PI / 2 - half, -Math.PI / 2 + half)
     ctx.stroke()
 
     // ── Arcos de córner ───────────────────────────────────────────────────────
@@ -130,7 +138,6 @@ export function ShareImageModal({
     })
 
     // ── Puntos de penal ───────────────────────────────────────────────────────
-    const penaltyOffset = 110
     ;[FY + penaltyOffset, FY + FH - penaltyOffset].forEach(py => {
       ctx.fillStyle = 'rgba(255,255,255,0.85)'
       ctx.beginPath()
@@ -187,8 +194,10 @@ export function ShareImageModal({
     for (const p of formation.players) {
       if (p.position_x === null || p.position_y === null) continue
 
-      const px = FX + p.position_x * FW
-      const py = FY + p.position_y * FH
+      // position_x/y come from the horizontal builder (x=left→right, y=top→bottom).
+      // The share image is portrait, so rotate: canvas_x = position_y, canvas_y = position_x.
+      const px = FX + p.position_y * FW
+      const py = FY + p.position_x * FH
       const isDark = p.team === 'dark'
       const R = 32
 

@@ -189,7 +189,7 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
         <div className="flex items-center gap-2">
           {active.length > 0 && (
             <Button size="sm" variant="ghost" onClick={openImport}>
-              <BarChart2 size={16} /> Stats previas
+              <BarChart2 size={16} /> Importar estadísticas
             </Button>
           )}
           <Button size="sm" onClick={openAdd}>
