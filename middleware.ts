@@ -6,5 +6,10 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-.*).*)'],
+  matcher: [
+    // Excluye assets internos de Next, manifest, service worker, y cualquier
+    // archivo con extensión de imagen (incluye los convention files de App
+    // Router: icon.jpg, apple-icon.jpg, opengraph-image.jpg, twitter-image.jpg)
+    '/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|workbox-.*|.*\\.(?:jpg|jpeg|png|gif|svg|webp|ico)).*)',
+  ],
 }
