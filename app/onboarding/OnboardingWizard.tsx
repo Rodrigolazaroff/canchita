@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { cn } from '@/lib/utils/format'
 import { toast } from 'sonner'
 import type { MatchType } from '@/lib/types'
+import { trackOnboardingCompleted } from '@/lib/analytics'
 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
@@ -48,6 +49,7 @@ export function OnboardingWizard({ userId, isNewGroup }: OnboardingWizardProps) 
       setLoading(false)
       return
     }
+    trackOnboardingCompleted({ match_type: matchType })
     // Full reload so server re-fetches groups with fresh session
     window.location.href = '/dashboard'
   }

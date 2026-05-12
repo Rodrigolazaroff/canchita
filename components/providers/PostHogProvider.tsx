@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { initAnalytics, identifyUser, trackPageview } from '@/lib/analytics'
+import { initPostHog, identify, trackPageview } from '@/lib/analytics'
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -10,11 +10,11 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   const lastPath = useRef<string>('')
 
   useEffect(() => {
-    initAnalytics()
+    initPostHog()
     // Identificar usuario desde sesión existente
     const supabase = createClient()
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) identifyUser(user.id, { email: user.email })
+      if (user) identify(user.id, { email: user.email })
     })
   }, [])
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/format'
-import { identifyUser, trackSignupCompleted, trackLoginSuccess } from '@/lib/analytics'
+import { identify, trackUserSignedUp, trackLoginSuccess } from '@/lib/analytics'
 
 type Mode = 'login' | 'register' | 'forgot'
 
@@ -39,13 +39,13 @@ export function LoginButton() {
       }
       // Email confirmation required (Supabase default)
       if (data.user && !data.session) {
-        trackSignupCompleted({ method: 'email' })
+        trackUserSignedUp({ method: 'email' })
         toast.success('¡Cuenta creada! Revisá tu email para confirmar.')
         setLoading(false)
         setMode('login')
         return
       }
-      trackSignupCompleted({ method: 'email' })
+      trackUserSignedUp({ method: 'email' })
       toast.success('¡Cuenta creada!')
     } else {
       const { data: loginData, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -55,7 +55,7 @@ export function LoginButton() {
         return
       }
       if (loginData.user) {
-        identifyUser(loginData.user.id, { email: loginData.user.email })
+        identify(loginData.user.id, { email: loginData.user.email })
         trackLoginSuccess({ method: 'email' })
       }
     }

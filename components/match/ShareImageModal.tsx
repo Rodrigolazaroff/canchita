@@ -7,7 +7,7 @@ import { initials } from '@/lib/utils/format'
 import type { FormationData } from '@/lib/types'
 import { Download, Share2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { trackMatchShared } from '@/lib/analytics'
+import { trackFormationShared } from '@/lib/analytics'
 
 interface ShareImageModalProps {
   open: boolean
@@ -338,10 +338,10 @@ export function ShareImageModal({
       const file = new File([blob], 'canchita-formacion.png', { type: 'image/png' })
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: `Formación ${groupName}` })
-        trackMatchShared({ method: 'native_share' })
+        trackFormationShared({ match_id: matchId, method: 'native_share' })
       } else {
         handleDownload()
-        trackMatchShared({ method: 'download' })
+        trackFormationShared({ match_id: matchId, method: 'download' })
       }
     } catch (e) {
       if ((e as Error).name !== 'AbortError') toast.error('No se pudo compartir')
