@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils/format'
 import { identify, trackUserSignedUp, trackLoginSuccess } from '@/lib/analytics'
+import { sendWelcomeEmail } from '@/lib/email'
 
 type Mode = 'login' | 'register' | 'forgot'
 
@@ -37,6 +38,7 @@ export function LoginButton() {
         setLoading(false)
         return
       }
+      sendWelcomeEmail(email, firstName.trim()).catch(() => {})
       // Email confirmation required (Supabase default)
       if (data.user && !data.session) {
         trackUserSignedUp({ method: 'email' })
