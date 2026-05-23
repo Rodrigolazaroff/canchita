@@ -67,6 +67,26 @@ const FORMATIONS: Record<MatchType, { name: string; slots: Slot[] }[]> = {
       { id: 'd-f1',  x: 0.44, y: Y1[0] },
     ]),
   ],
+  futbol7: [
+    buildFormation('1-3-3', [
+      { id: 'd-gk', x: 0.04, y: Y1[0] },
+      { id: 'd-d1', x: 0.16, y: Y3[0] },
+      { id: 'd-d2', x: 0.16, y: Y3[1] },
+      { id: 'd-d3', x: 0.16, y: Y3[2] },
+      { id: 'd-f1', x: 0.36, y: Y3[0] },
+      { id: 'd-f2', x: 0.36, y: Y3[1] },
+      { id: 'd-f3', x: 0.36, y: Y3[2] },
+    ]),
+    buildFormation('1-3-2-1', [
+      { id: 'd-gk', x: 0.04, y: Y1[0] },
+      { id: 'd-d1', x: 0.15, y: Y3[0] },
+      { id: 'd-d2', x: 0.15, y: Y3[1] },
+      { id: 'd-d3', x: 0.15, y: Y3[2] },
+      { id: 'd-m1', x: 0.28, y: Y2[0] },
+      { id: 'd-m2', x: 0.28, y: Y2[1] },
+      { id: 'd-f1', x: 0.41, y: Y1[0] },
+    ]),
+  ],
   futbol8: [
     buildFormation('2-3-2', [
       { id: 'd-gk',  x: 0.04, y: Y1[0] },

@@ -22,6 +22,7 @@ import { calcMatchWinner } from '@/lib/utils/metrics'
 /** Mínimo de jugadores totales (planilla + invitados) para cada modalidad. */
 export const MIN_PLAYERS: Record<MatchType, number> = {
   futbol5:  10,   // 5 vs 5
+  futbol7:  14,   // 7 vs 7
   futbol8:  16,   // 8 vs 8
   futbol11: 22,   // 11 vs 11
 }

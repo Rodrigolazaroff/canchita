@@ -1,4 +1,4 @@
-export type MatchType = 'futbol5' | 'futbol8' | 'futbol11'
+export type MatchType = 'futbol5' | 'futbol7' | 'futbol8' | 'futbol11'
 export type MatchStatus = 'scheduled' | 'played' | 'cancelled'
 export type Team = 'dark' | 'light' | 'bench'
 

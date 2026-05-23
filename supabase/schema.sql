@@ -37,7 +37,7 @@ CREATE TABLE groups (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
   name TEXT NOT NULL,
   days_of_week INT[],
-  match_type TEXT CHECK (match_type IN ('futbol5', 'futbol8', 'futbol11')),
+  match_type TEXT CHECK (match_type IN ('futbol5', 'futbol7', 'futbol8', 'futbol11')),
   deleted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

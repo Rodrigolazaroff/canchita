@@ -13,6 +13,7 @@ const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
 
 const MATCH_TYPES: { value: MatchType; label: string }[] = [
   { value: 'futbol5',  label: 'Fútbol 5'  },
+  { value: 'futbol7',  label: 'Fútbol 7'  },
   { value: 'futbol8',  label: 'Fútbol 8'  },
   { value: 'futbol11', label: 'Fútbol 11' },
 ]
