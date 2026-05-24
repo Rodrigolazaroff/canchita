@@ -88,7 +88,7 @@ export function ResultClient({ match, matchPlayers }: ResultClientProps) {
       <h1 className="font-display text-2xl text-text-primary">Cargar Resultado</h1>
 
       {/* Score */}
-      <Card className="flex items-center justify-center gap-6 py-6">
+      <Card className="flex items-center justify-center gap-3 sm:gap-6 py-6">
         <ScoreInput label="Oscuro" value={scoreDark} onChange={setScoreDark} />
         <p className="font-display text-3xl text-text-muted">vs</p>
         <ScoreInput label="Claro" value={scoreLight} onChange={setScoreLight} />
@@ -152,19 +152,19 @@ function ScoreInput({ label, value, onChange }: { label: string; value: number; 
   return (
     <div className="flex flex-col items-center gap-2">
       <p className="text-xs text-text-muted font-body uppercase">{label}</p>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         <button
           onClick={() => onChange(Math.max(0, value - 1))}
-          className="w-11 h-11 rounded-2xl bg-border text-text-secondary hover:bg-green-primary/20 hover:text-green-light transition-colors flex items-center justify-center"
+          className="w-9 h-9 shrink-0 rounded-xl bg-border text-text-secondary hover:bg-green-primary/20 hover:text-green-light transition-colors flex items-center justify-center"
         >
-          <Minus size={18} />
+          <Minus size={16} />
         </button>
-        <span className="font-display text-5xl text-text-primary w-12 text-center">{value}</span>
+        <span className="font-display text-4xl text-text-primary w-10 text-center">{value}</span>
         <button
           onClick={() => onChange(value + 1)}
-          className="w-11 h-11 rounded-2xl bg-border text-text-secondary hover:bg-green-primary/20 hover:text-green-light transition-colors flex items-center justify-center"
+          className="w-9 h-9 shrink-0 rounded-xl bg-border text-text-secondary hover:bg-green-primary/20 hover:text-green-light transition-colors flex items-center justify-center"
         >
-          <Plus size={18} />
+          <Plus size={16} />
         </button>
       </div>
     </div>

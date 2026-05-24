@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { AppShell } from '@/components/layout/AppShell'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
 import { Card } from '@/components/ui/Card'
-import { formatDate } from '@/lib/utils/format'
+import { cn, formatDate } from '@/lib/utils/format'
 
 export default async function PlayerStatsPage({ params }: { params: { playerId: string } }) {
   const supabase = createClient()
@@ -30,6 +30,7 @@ export default async function PlayerStatsPage({ params }: { params: { playerId: 
     { label: 'Goles', value: stats?.total_goals ?? 0 },
     { label: 'Asistencias', value: stats?.total_assists ?? 0 },
     { label: 'Victorias', value: stats?.wins ?? 0 },
+    { label: 'Promedio gol', value: Number(stats?.goal_avg ?? 0).toFixed(2) },
   ]
 
   return (
@@ -44,8 +45,8 @@ export default async function PlayerStatsPage({ params }: { params: { playerId: 
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-3">
-          {statCards.map(({ label, value }) => (
-            <Card key={label} className="flex flex-col items-center py-5 gap-1">
+          {statCards.map(({ label, value }, i) => (
+            <Card key={label} className={cn('flex flex-col items-center py-5 gap-1', i === 4 && 'col-span-2')}>
               <p className="font-display text-4xl text-green-light">{value}</p>
               <p className="text-sm text-text-muted font-body">{label}</p>
             </Card>
