@@ -9,14 +9,18 @@ import { toast } from 'sonner'
 import { Minus, Plus } from 'lucide-react'
 import type { Match, MatchPlayer } from '@/lib/types'
 import { trackStatsRecorded } from '@/lib/analytics'
+import { ResultShareModal, type ResultScorer } from '@/components/match/ResultShareModal'
 
 interface ResultClientProps {
   match: Match
   matchPlayers: (MatchPlayer & { players?: { name: string } | null })[]
+  groupName?: string
+  venueName?: string
 }
 
-export function ResultClient({ match, matchPlayers }: ResultClientProps) {
+export function ResultClient({ match, matchPlayers, groupName = '', venueName = '' }: ResultClientProps) {
   const router = useRouter()
+  const [shareOpen, setShareOpen] = useState(false)
   const [scoreDark, setScoreDark] = useState(0)
   const [scoreLight, setScoreLight] = useState(0)
   const [goals, setGoals] = useState<Record<string, number>>(
@@ -80,7 +84,15 @@ export function ResultClient({ match, matchPlayers }: ResultClientProps) {
       toast.success('¡Resultado guardado!')
     }
 
-    router.push(`/matches/${match.id}`)
+    setSaving(false)
+    setShareOpen(true)
+  }
+
+  function buildScorers(players: typeof matchPlayers): ResultScorer[] {
+    return players
+      .map(mp => ({ name: mp.players?.name ?? '?', goals: goals[mp.id] ?? 0 }))
+      .filter(s => s.goals > 0)
+      .sort((a, b) => b.goals - a.goals)
   }
 
   return (
@@ -144,6 +156,20 @@ export function ResultClient({ match, matchPlayers }: ResultClientProps) {
       <Button onClick={handleSave} loading={saving} size="lg" className="w-full">
         Guardar resultado
       </Button>
+
+      <ResultShareModal
+        open={shareOpen}
+        onClose={() => router.push(`/matches/${match.id}`)}
+        matchId={match.id}
+        groupName={groupName}
+        venueName={venueName}
+        matchDate={match.match_date}
+        matchTime={match.match_time}
+        scoreDark={scoreDark}
+        scoreLight={scoreLight}
+        scorersDark={buildScorers(darkPlayers)}
+        scorersLight={buildScorers(lightPlayers)}
+      />
     </div>
   )
 }
