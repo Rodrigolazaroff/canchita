@@ -70,7 +70,7 @@ export function ResultShareModal({
     if (!canvas) return
 
     const W = 1080
-    const H = 1280
+    const H = 1120
     canvas.width = W
     canvas.height = H
     const ctx = canvas.getContext('2d')!
@@ -119,20 +119,15 @@ export function ResultShareModal({
 
     const colDarkX = W * 0.28
     const colLightX = W * 0.72
-    const labelY = boardY + 80
-    const numY = boardY + 230
-    const crownY = boardY + 290
+    const dotY = boardY + 50      // muestra de color (arriba de todo)
+    const labelY = boardY + 110   // nombre del equipo
+    const numY = boardY + 260     // número grande
+    const crownY = boardY + 320   // ganador / empate
 
-    // Etiquetas equipo
-    ctx.font = 'bold 40px sans-serif'
-    ctx.fillStyle = '#cbd5e1'
-    ctx.fillText('OSCURO', colDarkX, labelY)
-    ctx.fillText('CLARO', colLightX, labelY)
-
-    // Círculos de muestra de color
+    // Círculos de muestra de color (arriba, sin pisar el número)
     const drawDot = (x: number, fill: string, stroke: string) => {
       ctx.beginPath()
-      ctx.arc(x, labelY + 40, 18, 0, Math.PI * 2)
+      ctx.arc(x, dotY, 16, 0, Math.PI * 2)
       ctx.fillStyle = fill
       ctx.fill()
       ctx.lineWidth = 3
@@ -142,8 +137,15 @@ export function ResultShareModal({
     drawDot(colDarkX, '#000000', '#ffffff')
     drawDot(colLightX, '#ffffff', '#000000')
 
+    // Etiquetas equipo
+    ctx.textAlign = 'center'
+    ctx.font = 'bold 38px sans-serif'
+    ctx.fillStyle = '#cbd5e1'
+    ctx.fillText('OSCURO', colDarkX, labelY)
+    ctx.fillText('CLARO', colLightX, labelY)
+
     // Números
-    ctx.font = 'bold 150px sans-serif'
+    ctx.font = 'bold 140px sans-serif'
     ctx.fillStyle = winner === 'dark' ? '#4ade80' : '#ffffff'
     ctx.fillText(String(scoreDark), colDarkX, numY)
     ctx.fillStyle = winner === 'light' ? '#4ade80' : '#ffffff'
@@ -151,8 +153,8 @@ export function ResultShareModal({
 
     // Guion del medio
     ctx.fillStyle = '#6b7280'
-    ctx.font = 'bold 90px sans-serif'
-    ctx.fillText('-', cx, numY - 20)
+    ctx.font = 'bold 80px sans-serif'
+    ctx.fillText('-', cx, numY - 35)
 
     // Corona / empate
     ctx.font = 'bold 30px sans-serif'
@@ -197,16 +199,25 @@ export function ResultShareModal({
     setImageUrl(canvas.toDataURL('image/png'))
   }
 
-  async function getFile(): Promise<File | null> {
-    if (!imageUrl) return null
-    const blob = await (await fetch(imageUrl)).blob()
-    return new File([blob], 'canchita-resultado.png', { type: 'image/png' })
-  }
-
   async function handleShare() {
-    const file = await getFile()
-    if (!file) return
+    if (!imageUrl) return
+
+    // WhatsApp y la mayoría de las apps IGNORAN el texto cuando se comparte una
+    // imagen (limitación de la plataforma, no del código). Por eso copiamos el
+    // relato al portapapeles para que el usuario lo pegue. Lo hacemos PRIMERO,
+    // antes de cualquier await, para conservar el gesto del usuario (iOS/Safari).
+    let copied = false
+    if (narration) {
+      try {
+        await navigator.clipboard.writeText(narration)
+        copied = true
+      } catch { /* sin permiso de portapapeles: seguimos igual */ }
+    }
+
     try {
+      const blob = await (await fetch(imageUrl)).blob()
+      const file = new File([blob], 'canchita-resultado.png', { type: 'image/png' })
+
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
@@ -214,9 +225,11 @@ export function ResultShareModal({
           title: `Resultado ${groupName}`,
         })
         trackFormationShared({ match_id: matchId, method: 'native_share_result' })
+        if (copied) toast.success('Relato copiado 📋 Pegalo en el mensaje')
       } else {
         handleDownload()
         trackFormationShared({ match_id: matchId, method: 'download_result' })
+        if (copied) toast.success('Relato copiado 📋 Pegalo junto a la imagen')
       }
     } catch (e) {
       if ((e as Error).name !== 'AbortError') toast.error('No se pudo compartir')
@@ -244,14 +257,18 @@ export function ResultShareModal({
   return (
     <Modal open={open} onClose={onClose} title="¡Resultado listo!" className="max-w-md sm:max-w-lg" disableBackdropClose>
       <canvas ref={canvasRef} className="hidden" />
-      <div className="flex flex-col gap-4 max-h-[78vh] overflow-y-auto">
+      <div className="flex flex-col gap-4">
         {imageUrl ? (
-          <div className="overflow-hidden rounded-xl border border-border">
+          <div className="flex justify-center overflow-hidden rounded-xl border border-border bg-black/30">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imageUrl} alt="Resultado" className="w-full h-full object-contain" />
+            <img
+              src={imageUrl}
+              alt="Resultado"
+              className="max-h-[42vh] w-auto object-contain"
+            />
           </div>
         ) : (
-          <div className="w-full bg-border rounded-xl animate-pulse flex items-center justify-center" style={{ aspectRatio: '1080/1280' }}>
+          <div className="w-full bg-border rounded-xl animate-pulse flex items-center justify-center" style={{ aspectRatio: '1080/1120' }}>
             <p className="text-text-muted font-body">Generando imagen...</p>
           </div>
         )}

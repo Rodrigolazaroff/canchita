@@ -36,6 +36,7 @@ export function ResultClient({ match, matchPlayers, groupName = '', venueName = 
   const benchPlayers = matchPlayers.filter(mp => mp.team === 'bench' || !mp.team)
 
   const topGoalscorer = matchPlayers.reduce<{ name: string; goals: number } | null>((best, mp) => {
+    if (!(attended[mp.id] ?? true)) return best
     const g = goals[mp.id] ?? 0
     if (g > 0 && (!best || g > best.goals)) return { name: mp.players?.name ?? '?', goals: g }
     return best
@@ -49,11 +50,16 @@ export function ResultClient({ match, matchPlayers, groupName = '', venueName = 
     setSaving(true)
     const supabase = createClient()
 
-    const updates = matchPlayers.map(mp => ({
-      id: mp.id,
-      goals: goals[mp.id] ?? 0,
-      attended: attended[mp.id] ?? true,
-    }))
+    const updates = matchPlayers.map(mp => {
+      const didAttend = attended[mp.id] ?? true
+      return {
+        id: mp.id,
+        // Si no jugó, no puede tener goles (el contador queda oculto pero el
+        // valor persistía en el estado).
+        goals: didAttend ? (goals[mp.id] ?? 0) : 0,
+        attended: didAttend,
+      }
+    })
 
     const winner = scoreDark > scoreLight ? 'dark' : scoreLight > scoreDark ? 'light' : 'draw'
 
@@ -90,6 +96,7 @@ export function ResultClient({ match, matchPlayers, groupName = '', venueName = 
 
   function buildScorers(players: typeof matchPlayers): ResultScorer[] {
     return players
+      .filter(mp => attended[mp.id] ?? true)
       .map(mp => ({ name: mp.players?.name ?? '?', goals: goals[mp.id] ?? 0 }))
       .filter(s => s.goals > 0)
       .sort((a, b) => b.goals - a.goals)

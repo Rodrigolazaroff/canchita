@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 
 export const runtime = 'nodejs'
+export const maxDuration = 20
 
 interface Scorer {
   name: string
@@ -69,18 +70,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Body inválido' }, { status: 400 })
   }
 
+  // Timeout defensivo para que la request no quede colgada.
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 15000)
+
   try {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           contents: [{ parts: [{ text: buildPrompt(body) }] }],
           generationConfig: {
-            temperature: 1.0,
-            maxOutputTokens: 300,
+            temperature: 1.1,
+            maxOutputTokens: 400,
             topP: 0.95,
+            // Gemini 2.5 Flash tiene "thinking" ON por defecto y consume el
+            // presupuesto de tokens, truncando la respuesta. Lo desactivamos:
+            // esta tarea es creativa simple, no necesita razonamiento previo.
+            thinkingConfig: { thinkingBudget: 0 },
           },
         }),
       },
@@ -96,22 +106,33 @@ export async function POST(req: Request) {
     }
 
     const data = await res.json()
-    const text: string | undefined =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text
+    const candidate = data?.candidates?.[0]
+    const text: string | undefined = candidate?.content?.parts
+      ?.map((p: { text?: string }) => p?.text ?? '')
+      .join('')
+      .trim()
+
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+      console.warn('Gemini truncó la respuesta por MAX_TOKENS')
+    }
 
     if (!text) {
+      console.error('Gemini sin texto. finishReason:', candidate?.finishReason)
       return NextResponse.json(
         { error: 'Respuesta vacía del modelo' },
         { status: 502 },
       )
     }
 
-    return NextResponse.json({ text: text.trim() })
+    return NextResponse.json({ text })
   } catch (e) {
+    const aborted = (e as Error).name === 'AbortError'
     console.error('Narrate route error:', e)
     return NextResponse.json(
-      { error: 'Error inesperado' },
-      { status: 500 },
+      { error: aborted ? 'Tardó demasiado' : 'Error inesperado' },
+      { status: aborted ? 504 : 500 },
     )
+  } finally {
+    clearTimeout(timeout)
   }
 }
