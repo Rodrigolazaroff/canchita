@@ -219,9 +219,12 @@ export function ResultShareModal({
       const file = new File([blob], 'canchita-resultado.png', { type: 'image/png' })
 
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        // NO pasamos `text` acá a propósito: algunas plataformas (WhatsApp
+        // Web/Desktop) lo honran y otras lo ignoran. Si lo mandáramos por el
+        // share Y por el portapapeles, en Desktop quedaría duplicado. Por eso
+        // el relato va SOLO por el portapapeles (canal único, sin duplicados).
         await navigator.share({
           files: [file],
-          text: narration || undefined,
           title: `Resultado ${groupName}`,
         })
         trackFormationShared({ match_id: matchId, method: 'native_share_result' })
