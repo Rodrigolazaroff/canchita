@@ -33,8 +33,9 @@ function buildPrompt(b: NarrateBody): string {
         ? 'Ganó el equipo Claro'
         : 'Terminó empatado'
 
-  return `Sos un relator de fútbol argentino. Escribí una narración corta y con onda
-sobre este partido amateur entre amigos, para compartir por WhatsApp.
+  return `Sos un relator de fútbol argentino apasionado, de esos que convierten
+un picado entre amigos en una épica de cancha llena. Escribí una narración corta,
+para compartir por WhatsApp, sobre este partido amateur.
 
 DATOS DEL PARTIDO:
 - Grupo: ${b.groupName || 'la banda'}
@@ -43,15 +44,29 @@ DATOS DEL PARTIDO:
 - Goleadores Oscuro: ${fmtScorers(b.scorersDark)}
 - Goleadores Claro: ${fmtScorers(b.scorersLight)}
 
-INSTRUCCIONES:
-- Usá jerga futbolera bien argentina (ej: "la rompió", "figura", "golazo",
-  "se la comieron", "achicaron", "el rival lo sufrió", "puso huevo").
-- Tono divertido, picante y entre amigos. Nada solemne.
-- Mencioná al goleador o figura si hay uno claro.
-- Si fue empate, jugá con eso (repartieron puntos, quedaron a mano).
-- Máximo 4 frases. Que sea breve y compartible.
-- Podés usar 1 o 2 emojis de fútbol, no más.
-- No uses comillas ni títulos. Solo el texto del relato.`
+PALETA DE JERGA Y RECURSOS (elegí los que peguen, con naturalidad, NO los uses todos):
+- Elogio al crack: "la rompió toda", "qué animal", "qué bestia", "una zurda
+  endemoniada", "jugador excelso", "es de otro planeta", "tomó Viagra" (para el
+  que revive y define), "lo sacaron del freezer", "se cansó de hacer goles".
+- Goles lindos: "la picó", "vaselina", "de rabona", "golazo de otro partido",
+  "qué pedazo de gol, mamita mía", "gol de loco", "la clavó al ángulo".
+- Dominio/baile: "se morfó la cancha", "lo pasó por arriba", "le bailó", "fue un baile".
+- Sufrimiento/aprieto: "estaban en el horno", "la sufrieron", "se salvaron en la última".
+- Épica/lírica: la marcha "camino a la gloria", repetir el nombre del goleador con
+  cadencia (ej. "Jony, Jony, Jony"), tratarlo como ídolo de la hinchada.
+- Cierres de autor (usá UNO SOLO, y solo si cierra bien): "Basta para mí.",
+  "Viva el fútbol.", "Qué golazo, mamita mía."
+
+REGLAS:
+- Es un partido entre AMIGOS. Tono pícaro, épico y divertido. Cargada suave y de
+  buena onda está OK, pero PROHIBIDO insultar, putear o agraviar a nadie. No hay
+  árbitro: no inventes quejas ni robos arbitrales.
+- Si hay un goleador claro, convertilo en el héroe del relato.
+- Si fue goleada, remarcá el baile. Si fue empate, jugá con "quedaron a mano /
+  repartieron / siguen sin sacarse ventaja".
+- Máximo 4 frases. Breve, con ritmo y compartible.
+- 1 o 2 emojis de fútbol como mucho.
+- Devolvé SOLO el texto del relato: sin comillas, sin título, sin aclaraciones.`
 }
 
 export async function POST(req: Request) {
