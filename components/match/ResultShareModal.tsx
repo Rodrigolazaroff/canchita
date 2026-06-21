@@ -258,7 +258,7 @@ export function ResultShareModal({
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="¡Resultado listo!" className="max-w-md sm:max-w-lg" disableBackdropClose>
+    <Modal open={open} onClose={onClose} title="¡Resultado listo!" className="max-w-md sm:max-w-lg no-scrollbar" disableBackdropClose>
       <canvas ref={canvasRef} className="hidden" />
       <div className="flex flex-col gap-4">
         {imageUrl ? (
