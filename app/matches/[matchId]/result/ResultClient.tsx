@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, type Dispatch, type SetStateAction } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
@@ -128,29 +128,42 @@ export function ResultClient({ match, matchPlayers, groupName = '', venueName = 
                 <span className="flex-1 font-body text-text-primary">{mp.players?.name}</span>
                 {/* Attended toggle */}
                 <button
+                  type="button"
                   onClick={() => setAttended(prev => ({ ...prev, [mp.id]: !prev[mp.id] }))}
-                  className={`text-xs px-2 py-1 rounded-full font-body ${
-                    attended[mp.id] ? 'bg-green-primary/20 text-green-light' : 'bg-border text-text-muted line-through'
+                  aria-pressed={!!attended[mp.id]}
+                  aria-label={`${mp.players?.name ?? 'Jugador'}: ${attended[mp.id] ? 'jugó' : 'no jugó'}. Tocar para cambiar`}
+                  className={`text-xs px-3 min-h-touch rounded-full font-body transition-colors ${
+                    attended[mp.id]
+                      ? 'bg-green-primary/20 text-green-light'
+                      : 'bg-surface border border-border text-text-muted line-through'
                   }`}
                 >
                   {attended[mp.id] ? 'Jugó' : 'No jugó'}
                 </button>
                 {attended[mp.id] && (
-                  <div className="flex items-center gap-2">
+                  <div
+                    role="group"
+                    aria-label={`Goles de ${mp.players?.name ?? 'jugador'}`}
+                    className="flex items-center gap-1"
+                  >
                     <button
+                      type="button"
                       onClick={() => setGoal(mp.id, -1)}
-                      className="w-9 h-9 rounded-xl bg-border flex items-center justify-center text-text-secondary hover:bg-green-primary/20 hover:text-green-light transition-colors"
+                      aria-label={`Restar un gol a ${mp.players?.name ?? 'jugador'}`}
+                      className="w-touch h-touch rounded-xl bg-surface border border-border flex items-center justify-center text-text-secondary hover:bg-green-primary/20 hover:text-green-light hover:border-green-primary/40 transition-colors"
                     >
-                      <Minus size={14} />
+                      <Minus size={16} aria-hidden="true" />
                     </button>
-                    <span className="font-display text-xl text-text-primary w-6 text-center">
+                    <span aria-live="polite" className="font-display text-xl text-text-primary w-7 text-center">
                       {goals[mp.id] ?? 0}
                     </span>
                     <button
+                      type="button"
                       onClick={() => setGoal(mp.id, 1)}
-                      className="w-9 h-9 rounded-xl bg-border flex items-center justify-center text-text-secondary hover:bg-green-primary/20 hover:text-green-light transition-colors"
+                      aria-label={`Sumar un gol a ${mp.players?.name ?? 'jugador'}`}
+                      className="w-touch h-touch rounded-xl bg-surface border border-border flex items-center justify-center text-text-secondary hover:bg-green-primary/20 hover:text-green-light hover:border-green-primary/40 transition-colors"
                     >
-                      <Plus size={14} />
+                      <Plus size={16} aria-hidden="true" />
                     </button>
                   </div>
                 )}
@@ -181,23 +194,44 @@ export function ResultClient({ match, matchPlayers, groupName = '', venueName = 
   )
 }
 
-function ScoreInput({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function ScoreInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: Dispatch<SetStateAction<number>>
+}) {
+  const btn =
+    'w-touch h-touch shrink-0 rounded-xl bg-surface border border-border text-text-secondary ' +
+    'hover:bg-green-primary/20 hover:text-green-light hover:border-green-primary/40 transition-colors ' +
+    'flex items-center justify-center'
+
   return (
-    <div className="flex flex-col items-center gap-2">
+    <div role="group" aria-label={`Goles del equipo ${label}`} className="flex flex-col items-center gap-2">
       <p className="text-xs text-text-muted font-body uppercase">{label}</p>
       <div className="flex items-center gap-2">
         <button
-          onClick={() => onChange(Math.max(0, value - 1))}
-          className="w-9 h-9 shrink-0 rounded-xl bg-border text-text-secondary hover:bg-green-primary/20 hover:text-green-light transition-colors flex items-center justify-center"
+          type="button"
+          // Antes calculaba desde `value` capturado: dos toques rápidos en el
+          // mismo tick sumaban uno solo. Con updater funcional no se pierde nada.
+          onClick={() => onChange(v => Math.max(0, v - 1))}
+          aria-label={`Restar un gol a ${label}`}
+          className={btn}
         >
-          <Minus size={16} />
+          <Minus size={16} aria-hidden="true" />
         </button>
-        <span className="font-display text-4xl text-text-primary w-10 text-center">{value}</span>
+        <span aria-live="polite" className="font-display text-4xl text-text-primary w-10 text-center">
+          {value}
+        </span>
         <button
-          onClick={() => onChange(value + 1)}
-          className="w-9 h-9 shrink-0 rounded-xl bg-border text-text-secondary hover:bg-green-primary/20 hover:text-green-light transition-colors flex items-center justify-center"
+          type="button"
+          onClick={() => onChange(v => v + 1)}
+          aria-label={`Sumar un gol a ${label}`}
+          className={btn}
         >
-          <Plus size={16} />
+          <Plus size={16} aria-hidden="true" />
         </button>
       </div>
     </div>

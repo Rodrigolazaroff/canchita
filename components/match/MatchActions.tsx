@@ -36,36 +36,45 @@ export function MatchActions({ matchId }: MatchActionsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <Link href={`/matches/${matchId}/edit`}>
-        <Button variant="ghost" size="sm" className="text-text-muted hover:text-text-primary h-11 w-11">
-          <Pencil size={22} />
-        </Button>
+      <Link
+        href={`/matches/${matchId}/edit`}
+        aria-label="Editar partido"
+        className="grid place-items-center w-touch h-touch rounded-xl text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+      >
+        <Pencil size={20} aria-hidden="true" />
       </Link>
 
       {!showConfirm ? (
         <Button
           variant="ghost"
           size="sm"
-          className="text-text-muted hover:text-red-400 h-11 w-11"
+          aria-label="Eliminar partido"
+          className="text-text-muted hover:text-red-300 w-touch px-0"
           onClick={() => setShowConfirm(true)}
         >
-          <Trash2 size={22} />
+          <Trash2 size={20} aria-hidden="true" />
         </Button>
       ) : (
-        <div className="flex items-center gap-1 bg-red-500/10 rounded-lg p-1 animate-in fade-in zoom-in duration-200">
+        <div
+          role="alertdialog"
+          aria-label="Confirmar eliminación del partido"
+          className="flex items-center gap-1 bg-red-500/10 rounded-lg p-1 motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in duration-200"
+        >
           <Button
             variant="ghost"
-            className="h-9 px-3 text-xs uppercase tracking-wider font-bold text-red-400 hover:bg-red-500 hover:text-white"
+            className="px-3 text-xs uppercase tracking-wider font-bold text-red-300 hover:bg-red-600 hover:text-white"
             onClick={handleDelete}
-            disabled={loading}
+            loading={loading}
+            loadingLabel="Eliminando el partido"
           >
             Confirmar
           </Button>
           <Button
             variant="ghost"
-            className="h-9 px-3 text-xs uppercase tracking-wider font-bold text-text-muted"
+            className="px-3 text-xs uppercase tracking-wider font-bold text-text-muted"
             onClick={() => setShowConfirm(false)}
             disabled={loading}
+            aria-label="Cancelar la eliminación"
           >
             No
           </Button>

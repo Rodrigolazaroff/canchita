@@ -103,7 +103,7 @@ export function OnboardingWizard({ userId, isNewGroup }: OnboardingWizardProps) 
                   className={cn(
                     'flex items-center justify-center w-full h-12 rounded-xl font-body text-sm font-semibold transition-all',
                     daysOfWeek.includes(i)
-                      ? 'bg-green-primary text-white shadow-lg shadow-green-primary/30'
+                      ? 'bg-green-primary text-green-ink shadow-lg shadow-green-primary/30'
                       : 'bg-surface border border-border text-text-secondary hover:border-green-primary/50'
                   )}
                 >

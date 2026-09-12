@@ -74,9 +74,11 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
 }
 
 export function playerColor(id: string): string {
+  // Tonos un escalón más profundos que los originales: con texto blanco los
+  // anteriores quedaban en ~3.1:1 y las iniciales no se leían.
   const colors = [
-    '#16a34a', '#2563eb', '#dc2626', '#d97706',
-    '#7c3aed', '#db2777', '#0891b2', '#65a30d',
+    '#15803d', '#1d4ed8', '#b91c1c', '#b45309',
+    '#6d28d9', '#be185d', '#0e7490', '#4d7c0f',
   ]
   let hash = 0
   for (const ch of id) hash = ((hash << 5) - hash) + ch.charCodeAt(0)

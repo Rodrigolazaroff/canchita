@@ -70,6 +70,7 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr,350px] gap-8">
+      <h1 className="sr-only">Inicio de {group.name}</h1>
       <div className="flex flex-col gap-6">
         {/* Próximo partido */}
         <section>
@@ -150,7 +151,7 @@ export function DashboardClient({ groups, profile }: DashboardClientProps) {
                 href="/matches/new"
                 className={cn(
                   "inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95",
-                  "bg-green-primary text-white hover:bg-green-600 h-11 px-5 text-base gap-2"
+                  "bg-green-primary text-green-ink hover:bg-green-hover h-11 px-5 text-base gap-2"
                 )}
               >
                 <Plus size={16} /> Crear partido

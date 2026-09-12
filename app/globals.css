@@ -2,11 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap');
+/* Las familias se inyectan desde app/layout.tsx con next/font (self-hosted,
+   sin round-trip a fonts.googleapis.com ni FOUT). Acá solo quedan los alias. */
+.font-display {
+  font-family: var(--font-oswald), sans-serif;
+}
 
-:root {
-  --font-oswald: 'Oswald', sans-serif;
-  --font-dm-sans: 'DM Sans', sans-serif;
+.font-body {
+  font-family: var(--font-dm-sans), sans-serif;
 }
 
 * {
@@ -20,12 +23,52 @@ body {
   overscroll-behavior: none;
 }
 
-.font-display {
-  font-family: var(--font-oswald), sans-serif;
+/* ── Foco visible ─────────────────────────────────────────────────────────────
+   Antes había `focus:outline-none` suelto y ningún reemplazo: con teclado no se
+   veía dónde estabas parado. Un solo anillo para toda la app, solo en
+   :focus-visible para que el mouse no lo dispare. */
+:focus-visible {
+  outline: 2px solid #4ade80;
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-.font-body {
-  font-family: var(--font-dm-sans), sans-serif;
+/* El anillo nunca queda tapado por un borde o un overflow del contenedor. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #4ade80;
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Motion ───────────────────────────────────────────────────────────────────
+   La app usa slide-up, slide-in y active:scale por todos lados. Con
+   prefers-reduced-motion eso puede marear; se apaga todo sin romper layout. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Área segura (PWA en iOS) ─────────────────────────────────────────────────
+   Con display:standalone y statusBarStyle black-translucent el contenido se
+   mete abajo del notch y de la barra de gestos. */
+.pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* Smooth scrolling on iOS */
@@ -36,6 +79,19 @@ body {
 /* Hide scrollbar but keep functionality */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Solo para lectores de pantalla. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
 
 /* Icono del datepicker nativo en blanco (chrome/edge/safari) */
 input[type="date"]::-webkit-calendar-picker-indicator,

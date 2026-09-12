@@ -20,11 +20,21 @@ export function BottomNav() {
   const [mounted, setMounted] = useState(false)
   useEffect(() => { setMounted(true) }, [])
 
-  if (!mounted) return <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border md:hidden h-16" />
+  if (!mounted) {
+    return (
+      <nav
+        aria-label="Navegación principal"
+        className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border md:hidden h-16 pb-safe"
+      />
+    )
+  }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border md:hidden">
-      <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+    <nav
+      aria-label="Navegación principal"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border md:hidden pb-safe"
+    >
+      <div className="flex items-center justify-around h-[4.5rem] px-2 max-w-lg mx-auto">
         {navItems.map(({ href, label, icon: Icon, highlight }) => {
           const finalHref = href === '/history' && activeGroup
             ? `/groups/${activeGroup.id}/history`
@@ -34,15 +44,30 @@ export function BottomNav() {
             <Link
               key={href}
               href={finalHref}
+              // El item activo se distinguía solo por color: se le suma el punto
+              // y aria-current para que no dependa de ver el verde.
+              aria-current={active ? 'page' : undefined}
               className={cn(
-                'flex flex-col items-center gap-1 min-w-[44px] py-1 rounded-xl transition-colors',
+                'relative flex flex-col items-center justify-center gap-1 min-w-touch min-h-touch px-2 rounded-xl transition-colors',
                 highlight
-                  ? 'bg-green-primary text-white rounded-2xl px-4 py-3 -mt-4 shadow-lg shadow-green-primary/30'
-                  : active ? 'text-green-light' : 'text-text-muted hover:text-text-secondary'
+                  ? 'bg-green-primary text-green-ink rounded-2xl px-5 -mt-4 shadow-lg shadow-green-primary/30'
+                  : active ? 'text-green-light' : 'text-text-muted hover:text-text-primary',
               )}
             >
-              <Icon size={highlight ? 22 : 20} />
-              {!highlight && <span className="text-[10px] font-body">{label}</span>}
+              <Icon size={highlight ? 24 : 20} aria-hidden="true" />
+              {/* El CTA no tenía texto ni aria-label: para un lector de pantalla
+                  era un link sin nombre. */}
+              {highlight ? (
+                <span className="sr-only">{label}</span>
+              ) : (
+                <span className="text-[11px] leading-none font-body">{label}</span>
+              )}
+              {active && !highlight && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-0.5 h-1 w-1 rounded-full bg-green-light"
+                />
+              )}
             </Link>
           )
         })}

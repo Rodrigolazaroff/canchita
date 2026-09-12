@@ -167,7 +167,7 @@ export default async function MatchDetailPage({ params }: { params: { matchId: s
             />
             <Link
               href={`/matches/${params.matchId}/result`}
-              className="inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95 bg-green-primary text-white hover:bg-green-600 h-12 px-5 text-base gap-2 shadow-lg shadow-green-primary/20"
+              className="inline-flex items-center justify-center font-body font-semibold rounded-xl transition-all active:scale-95 bg-green-primary text-green-ink hover:bg-green-hover h-12 px-5 text-base gap-2 shadow-lg shadow-green-primary/20"
             >
               Cargar resultado
             </Link>

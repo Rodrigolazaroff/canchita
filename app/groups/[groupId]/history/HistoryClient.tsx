@@ -36,7 +36,7 @@ export function HistoryClient({ matches, groupId }: HistoryClientProps) {
             className={cn(
               'px-4 py-2 rounded-xl font-body text-sm transition-colors',
               filter === f
-                ? 'bg-green-primary text-white'
+                ? 'bg-green-primary text-green-ink'
                 : 'bg-surface border border-border text-text-secondary hover:border-green-primary/40'
             )}
           >

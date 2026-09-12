@@ -77,11 +77,21 @@ export function AliasesClient({ aliases: initial, userId }: AliasesClientProps) 
               <p className="font-body font-semibold text-text-primary">{a.label}</p>
               <p className="text-sm text-green-light font-body">{a.alias}</p>
             </div>
-            <button onClick={() => openEdit(a)} className="p-2 text-text-muted hover:text-text-primary">
-              <Pencil size={16} />
+            <button
+              type="button"
+              onClick={() => openEdit(a)}
+              aria-label={`Editar el alias ${a.label}`}
+              className="grid place-items-center w-touch h-touch rounded-xl text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+            >
+              <Pencil size={18} aria-hidden="true" />
             </button>
-            <button onClick={() => handleDelete(a.id)} className="p-2 text-text-muted hover:text-red-400">
-              <Trash2 size={16} />
+            <button
+              type="button"
+              onClick={() => handleDelete(a.id)}
+              aria-label={`Eliminar el alias ${a.label}`}
+              className="grid place-items-center w-touch h-touch rounded-xl text-text-muted hover:text-red-300 hover:bg-surface transition-colors"
+            >
+              <Trash2 size={18} aria-hidden="true" />
             </button>
           </Card>
         ))}

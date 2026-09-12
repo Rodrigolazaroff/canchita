@@ -251,11 +251,13 @@ export function PlayersClient({ players: initial, groupId, userId }: PlayersClie
                 <PlayerAvatar name={player.name} id={player.id} photoUrl={player.photo_url} size={36} />
                 <span className="flex-1 font-body text-sm text-text-primary truncate">{player.name}</span>
                 <StatStepper
+                  label={`partidos jugados de ${player.name}`}
                   value={importValues[player.id]?.matches ?? 0}
                   onDecrement={() => adjustImport(player.id, 'matches', -1)}
                   onIncrement={() => adjustImport(player.id, 'matches', +1)}
                 />
                 <StatStepper
+                  label={`goles de ${player.name}`}
                   value={importValues[player.id]?.goals ?? 0}
                   onDecrement={() => adjustImport(player.id, 'goals', -1)}
                   onIncrement={() => adjustImport(player.id, 'goals', +1)}
@@ -354,32 +356,36 @@ function PlayerRow({ player, onMenu }: { player: Player; onMenu: () => void }) {
       )}>
         {player.is_injured ? '🩹' : player.is_guest ? 'Invitado' : 'Habitual'}
       </span>
-      <button onClick={onMenu} className="p-1 text-text-muted hover:text-text-primary">
-        <MoreVertical size={18} />
+      <button
+        type="button"
+        onClick={onMenu}
+        aria-label={`Acciones de ${player.name}`}
+        aria-haspopup="menu"
+        className="grid place-items-center w-touch h-touch -mr-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+      >
+        <MoreVertical size={18} aria-hidden="true" />
       </button>
     </div>
   )
 }
 
-function StatStepper({ value, onDecrement, onIncrement }: {
+function StatStepper({ label, value, onDecrement, onIncrement }: {
+  label: string
   value: number
   onDecrement: () => void
   onIncrement: () => void
 }) {
+  const btn =
+    'w-8 h-8 flex items-center justify-center rounded-lg bg-surface border border-border ' +
+    'hover:border-green-primary/40 hover:text-green-light text-text-muted transition-colors'
   return (
-    <div className="flex items-center gap-1 w-16 justify-center">
-      <button
-        onClick={onDecrement}
-        className="w-6 h-6 flex items-center justify-center rounded-lg bg-border hover:bg-border/80 text-text-muted"
-      >
-        <Minus size={12} />
+    <div role="group" aria-label={label} className="flex items-center gap-1 w-20 justify-center">
+      <button type="button" onClick={onDecrement} aria-label={`Restar 1 a ${label}`} className={btn}>
+        <Minus size={14} aria-hidden="true" />
       </button>
-      <span className="w-6 text-center font-body text-sm text-text-primary tabular-nums">{value}</span>
-      <button
-        onClick={onIncrement}
-        className="w-6 h-6 flex items-center justify-center rounded-lg bg-border hover:bg-border/80 text-text-muted"
-      >
-        <Plus size={12} />
+      <span aria-live="polite" className="w-6 text-center font-body text-sm text-text-primary tabular-nums">{value}</span>
+      <button type="button" onClick={onIncrement} aria-label={`Sumar 1 a ${label}`} className={btn}>
+        <Plus size={14} aria-hidden="true" />
       </button>
     </div>
   )
