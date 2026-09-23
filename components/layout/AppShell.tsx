@@ -1,4 +1,5 @@
 import { BottomNav } from './BottomNav'
+import { InstallPrompt } from '@/components/pwa/InstallPrompt'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { createClient } from '@/lib/supabase/server'
@@ -36,6 +37,7 @@ export async function AppShell({ profile, children, isAdmin, displayName }: AppS
       </main>
       {/* BottomNav solo en mobile */}
       <BottomNav />
+      <InstallPrompt />
     </div>
   )
 }
