@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
 import { Card } from '@/components/ui/Card'
+import { InstallAppButton } from '@/components/pwa/InstallAppButton'
 import { Button } from '@/components/ui/Button'
 import { LogOut, Settings, Users, ChevronRight } from 'lucide-react'
 import { formatDayOfWeek } from '@/lib/utils/format'
@@ -82,11 +83,12 @@ export function ProfileClient({ profile, groups, userEmail, userMeta }: ProfileC
         <h2 className="font-display text-xl text-text-primary mb-1">Configuración</h2>
         <Link href="/settings/aliases">
           <Card className="flex items-center gap-3 hover:border-green-primary/30 transition-colors">
-            <Settings size={18} className="text-text-muted" />
+            <Settings size={18} className="text-text-muted" aria-hidden="true" />
             <span className="flex-1 font-body text-text-primary">Alias de Pago</span>
-            <ChevronRight size={16} className="text-text-muted" />
+            <ChevronRight size={16} className="text-text-muted" aria-hidden="true" />
           </Card>
         </Link>
+        <InstallAppButton />
       </section>
 
       <Button variant="danger" onClick={handleLogout} className="w-full">

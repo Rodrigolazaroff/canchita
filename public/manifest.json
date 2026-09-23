@@ -6,7 +6,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0a0f0d",
-  "theme_color": "#16a34a",
+  "theme_color": "#0a0f0d",
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -21,6 +21,9 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["sports", "productivity"],
+  "categories": [
+    "sports",
+    "productivity"
+  ],
   "lang": "es-AR"
 }
