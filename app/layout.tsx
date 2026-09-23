@@ -4,6 +4,7 @@ import './globals.css'
 import { Toaster } from 'sonner'
 import { Suspense } from 'react'
 import { PostHogProvider } from '@/components/providers/PostHogProvider'
+import { ScriptPWA } from '@/components/pwa/ScriptPWA'
 
 // Self-hosted por next/font: sin @import bloqueante a fonts.googleapis.com.
 const oswald = Oswald({
@@ -58,6 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es-AR" className={`${oswald.variable} ${dmSans.variable}`}>
       <body suppressHydrationWarning>
+        <ScriptPWA />
         <a
           href="#contenido"
           className="sr-only focus:not-sr-only focus:absolute focus:z-[100] focus:top-3 focus:left-3 focus:rounded-xl focus:bg-surface focus:px-4 focus:py-3 focus:text-text-primary focus:outline focus:outline-2 focus:outline-green-light"
