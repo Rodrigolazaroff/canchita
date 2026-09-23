@@ -15,7 +15,19 @@ addEventListener("appinstalled",function(){
   dispatchEvent(new Event("canchita:pwa"));
 });`
 
-// El service worker lo registra next-pwa, así que acá solo va la captura.
+// next-pwa genera public/sw.js pero solo inyecta el registro en Pages Router:
+// con App Router nunca se registra, y sin service worker Chrome no considera
+// instalable la app. Se registra a mano.
+const REGISTRO = `
+if("serviceWorker" in navigator){
+  addEventListener("load",function(){
+    navigator.serviceWorker.register("/sw.js").catch(function(){});
+  });
+}`
+
+// En desarrollo no se registra: el service worker cachea los bundles y pelea
+// con el recargado en caliente.
 export function ScriptPWA() {
-  return <script dangerouslySetInnerHTML={{ __html: CAPTURA }} />
+  const codigo = process.env.NODE_ENV === 'production' ? CAPTURA + REGISTRO : CAPTURA
+  return <script dangerouslySetInnerHTML={{ __html: codigo }} />
 }
