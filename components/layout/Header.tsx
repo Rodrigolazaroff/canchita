@@ -26,6 +26,21 @@ export function Header({ profile, displayName }: HeaderProps) {
   // Solución: diferir todo el contenido dinámico hasta después del montaje.
   useEffect(() => { setMounted(true) }, [])
 
+  // El dropdown quedaba abierto con Escape o al tocar afuera.
+  useEffect(() => {
+    if (!dropdownOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setDropdownOpen(false) }
+    const onClick = (e: MouseEvent) => {
+      if (!(e.target as HTMLElement).closest('[data-group-switcher]')) setDropdownOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    document.addEventListener('mousedown', onClick)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.removeEventListener('mousedown', onClick)
+    }
+  }, [dropdownOpen])
+
   function handleUpdated(updated: Group) {
     // Actualizar el grupo en el store
     const newGroups = groups.map(g => g.id === updated.id ? updated : g)
@@ -45,10 +60,10 @@ export function Header({ profile, displayName }: HeaderProps) {
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 h-14 border-b border-border bg-bg/80 backdrop-blur sticky top-0 z-30 md:ml-56">
+      <header className="flex items-center justify-between px-4 h-14 pt-safe border-b border-border bg-bg/80 backdrop-blur sticky top-0 z-30 md:ml-56">
 
         {/* Selector de grupo — se renderiza vacío en el servidor, con datos en el cliente */}
-        <div className="relative flex items-center gap-2 min-w-0">
+        <div data-group-switcher className="relative flex items-center gap-2 min-w-0">
           {!mounted ? (
             /* Placeholder idéntico en servidor y cliente: evita el mismatch */
             <div className="h-6 w-32 rounded-lg bg-border/50 animate-pulse" />
@@ -56,7 +71,10 @@ export function Header({ profile, displayName }: HeaderProps) {
             <>
               <button
                 onClick={() => groups.length > 1 && setDropdownOpen(o => !o)}
-                className="flex items-center gap-1.5 text-text-primary font-body min-w-0"
+                aria-haspopup={groups.length > 1 ? 'menu' : undefined}
+                aria-expanded={groups.length > 1 ? dropdownOpen : undefined}
+                aria-label={groups.length > 1 ? `Grupo activo: ${current?.name ?? 'ninguno'}. Cambiar de grupo` : undefined}
+                className="flex items-center gap-1.5 min-h-touch text-text-primary font-body min-w-0"
               >
                 <span className="font-display text-lg truncate max-w-[180px]">
                   {current?.name ?? 'Sin grupo'}
@@ -73,22 +91,26 @@ export function Header({ profile, displayName }: HeaderProps) {
               {current && (
                 <button
                   onClick={() => { setDropdownOpen(false); setSettingsOpen(true) }}
-                  className="flex-shrink-0 p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
-                  title="Configurar grupo"
+                  className="flex-shrink-0 grid place-items-center w-touch h-touch rounded-lg text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+                  aria-label="Configurar grupo"
                 >
-                  <Settings size={15} />
+                  <Settings size={18} aria-hidden="true" />
                 </button>
               )}
 
               {/* Dropdown de grupos */}
               {dropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 bg-surface border border-border rounded-xl shadow-xl min-w-[200px] py-1 z-50">
+                <div
+                  role="menu"
+                  className="absolute top-full left-0 mt-1 bg-elevated border border-border rounded-xl shadow-xl min-w-[200px] py-1 z-50"
+                >
                   {groups.map(g => (
                     <button
                       key={g.id}
                       onClick={() => { setActiveGroup(g.id); setDropdownOpen(false) }}
+                      role="menuitem"
                       className={cn(
-                        'w-full text-left px-4 py-2.5 font-body text-sm hover:bg-border transition-colors',
+                        'w-full text-left px-4 min-h-touch font-body text-sm hover:bg-surface transition-colors',
                         g.id === activeGroupId ? 'text-green-light' : 'text-text-primary'
                       )}
                     >
@@ -98,9 +120,10 @@ export function Header({ profile, displayName }: HeaderProps) {
                   <Link
                     href="/onboarding?new=true"
                     onClick={() => setDropdownOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2.5 font-body text-sm text-text-muted hover:bg-border border-t border-border mt-1"
+                    role="menuitem"
+                    className="flex items-center gap-2 px-4 min-h-touch font-body text-sm text-text-muted hover:bg-surface border-t border-border mt-1"
                   >
-                    <Plus size={14} /> Nuevo grupo
+                    <Plus size={14} aria-hidden="true" /> Nuevo grupo
                   </Link>
                 </div>
               )}
@@ -110,7 +133,11 @@ export function Header({ profile, displayName }: HeaderProps) {
 
         {/* Avatar del usuario */}
         {profile && (
-          <Link href="/profile">
+          <Link
+            href="/profile"
+            aria-label="Tu perfil"
+            className="grid place-items-center w-touch h-touch -mr-2 rounded-full"
+          >
             <PlayerAvatar
               name={displayName || profile.full_name || 'U'}
               id={profile.id}

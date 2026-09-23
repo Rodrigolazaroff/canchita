@@ -319,13 +319,15 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
           <div className="flex items-start justify-between gap-2 mb-2">
             {/* Izquierda: pills oscuro + estado */}
             <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1">
+              <div role="group" aria-label="Formación del equipo oscuro" className="flex items-center gap-1">
                 {FORMATIONS[matchType].map((f, i) => (
                   <button
                     key={f.name}
                     onClick={() => changeFormationDark(i)}
+                    aria-pressed={selectedFormationDark === i}
+                    aria-label={`Formación ${f.name} para el equipo oscuro`}
                     className={cn(
-                      'px-2.5 py-0.5 rounded-full text-xs font-body font-semibold border transition-colors',
+                      'px-3 min-h-[36px] rounded-full text-xs font-body font-semibold border transition-colors',
                       selectedFormationDark === i
                         ? 'bg-blue-700 border-blue-700 text-white'
                         : 'bg-surface border-border text-text-muted hover:border-blue-400/40'
@@ -341,13 +343,15 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
             </div>
             {/* Derecha: pills claro + aleatorizar/limpiar */}
             <div className="flex flex-col gap-1 items-end">
-              <div className="flex items-center gap-1">
+              <div role="group" aria-label="Formación del equipo claro" className="flex items-center gap-1">
                 {FORMATIONS[matchType].map((f, i) => (
                   <button
                     key={f.name}
                     onClick={() => changeFormationLight(i)}
+                    aria-pressed={selectedFormationLight === i}
+                    aria-label={`Formación ${f.name} para el equipo claro`}
                     className={cn(
-                      'px-2.5 py-0.5 rounded-full text-xs font-body font-semibold border transition-colors',
+                      'px-3 min-h-[36px] rounded-full text-xs font-body font-semibold border transition-colors',
                       selectedFormationLight === i
                         ? 'bg-slate-300 border-slate-300 text-black'
                         : 'bg-surface border-border text-text-muted hover:border-white/20'
@@ -358,12 +362,18 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
                 ))}
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={randomize} className="text-green-light font-body flex items-center gap-1 text-xs">
-                  <Shuffle size={12} /> Aleatorizar
+                <button
+                  onClick={randomize}
+                  className="text-green-light font-body flex items-center gap-1.5 text-xs min-h-touch px-2 -mx-2 rounded-lg hover:bg-surface transition-colors"
+                >
+                  <Shuffle size={14} aria-hidden="true" /> Aleatorizar
                 </button>
                 {Object.keys(assignments).length > 0 && (
-                  <button onClick={() => setAssignments({})} className="text-text-muted hover:text-red-400 font-body flex items-center gap-1 text-xs">
-                    <RotateCcw size={12} /> Limpiar
+                  <button
+                    onClick={() => setAssignments({})}
+                    className="text-text-muted hover:text-red-300 font-body flex items-center gap-1.5 text-xs min-h-touch px-2 -mx-2 rounded-lg hover:bg-surface transition-colors"
+                  >
+                    <RotateCcw size={14} aria-hidden="true" /> Limpiar
                   </button>
                 )}
               </div>
@@ -434,7 +444,7 @@ export function FormationBuilder({ players, matchType, onBack, onFinish, saving 
 
       <DragOverlay dropAnimation={null}>
         {activePlayer && (
-          <div className="w-10 h-10 rounded-full border-2 border-white/60 bg-green-primary flex items-center justify-center text-white text-[10px] font-bold shadow-2xl">
+          <div className="w-10 h-10 rounded-full border-2 border-white/60 bg-green-primary flex items-center justify-center text-green-ink text-[11px] font-bold shadow-2xl">
             {initials(activePlayer.name)}
           </div>
         )}
@@ -550,7 +560,7 @@ function FieldSlot({ slot, player, onUnassign }: {
           <button
             onClick={onUnassign}
             className={cn(
-              'group relative w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center text-[10px] sm:text-[11px] font-bold hover:scale-110 transition-transform shadow-lg cursor-pointer',
+              'group relative w-9 h-9 sm:w-11 sm:h-11 rounded-full border-2 flex items-center justify-center text-[11px] sm:text-xs font-bold motion-safe:hover:scale-110 transition-transform shadow-lg cursor-pointer',
               isDark ? 'bg-black text-white border-white' : 'bg-white text-black border-black'
             )}
           >
@@ -560,7 +570,7 @@ function FieldSlot({ slot, player, onUnassign }: {
             </span>
           </button>
           <span className={cn(
-            'text-[9px] sm:text-[10px] font-body font-semibold truncate max-w-[60px] sm:max-w-[75px] text-center mt-0.5 px-1 rounded shadow-sm',
+            'text-[11px] sm:text-xs font-body font-semibold truncate max-w-[64px] sm:max-w-[80px] text-center mt-0.5 px-1 rounded shadow-sm',
             isDark ? 'text-blue-100 bg-blue-900/60' : 'text-bg bg-white/80'
           )}>
             {player.name}

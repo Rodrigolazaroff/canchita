@@ -10,7 +10,7 @@ export default async function ResultPage({ params }: { params: { matchId: string
 
   const [{ data: profile }, { data: match }, { data: matchPlayers }] = await Promise.all([
     supabase.from('profiles').select('*').eq('id', user.id).single(),
-    supabase.from('matches').select('*').eq('id', params.matchId).eq('user_id', user.id).single(),
+    supabase.from('matches').select('*, groups(name), venues(name)').eq('id', params.matchId).eq('user_id', user.id).single(),
     supabase
       .from('match_players')
       .select('*, players(*)')
@@ -19,9 +19,20 @@ export default async function ResultPage({ params }: { params: { matchId: string
 
   if (!match || match.status === 'played') redirect(`/matches/${params.matchId}`)
 
+  const groupName = (match as { groups?: { name?: string } }).groups?.name ?? ''
+  const venueName =
+    match.venue_name_override ||
+    (match as { venues?: { name?: string } }).venues?.name ||
+    ''
+
   return (
     <AppShell profile={profile} isAdmin={profile?.is_admin}>
-      <ResultClient match={match} matchPlayers={matchPlayers ?? []} />
+      <ResultClient
+        match={match}
+        matchPlayers={matchPlayers ?? []}
+        groupName={groupName}
+        venueName={venueName}
+      />
     </AppShell>
   )
 }

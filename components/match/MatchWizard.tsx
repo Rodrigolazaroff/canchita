@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useGroupStore } from '@/lib/stores/group'
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { toast } from 'sonner'
 import Link from 'next/link'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, Users } from 'lucide-react'
 import { FormationBuilder } from '@/components/match/FormationBuilder'
 import { ShareImageModal } from '@/components/match/ShareImageModal'
 import { PlayerAvatar } from '@/components/player/PlayerAvatar'
@@ -45,6 +45,12 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
   }, [])
 
   const group = activeGroup()
+
+  // El store persiste en localStorage: en el servidor `group` es null y en el
+  // cliente ya viene con datos, así que el primer render no coincidía y React
+  // tiraba toda la hidratación. Mismo patrón que Header/BottomNav/Sidebar.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
@@ -85,6 +91,16 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
     })
   }, [group?.id])
 
+  // Los defaults de tipo y fecha se calculaban en el useState inicial, cuando
+  // `group` todavía era null. Se aplican una sola vez, ya con el grupo cargado.
+  const defaultsRef = useRef(false)
+  useEffect(() => {
+    if (!group || isEditing || defaultsRef.current) return
+    defaultsRef.current = true
+    if (group.match_type) setMatchType(group.match_type as MatchType)
+    if (group.days_of_week?.length) setMatchDate(nextOccurrenceOf(group.days_of_week))
+  }, [group?.id, isEditing])
+
   function togglePlayer(id: string) {
     setSelected(prev => {
       const next = new Set(prev)
@@ -96,7 +112,7 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
   function addGuest() {
     if (!guestName.trim() || !group) return
     const fake: Player = {
-      id: `guest-${Date.now()}`,
+      id: `guest-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       group_id: group.id,
       user_id: userId,
       name: guestName.trim(),
@@ -196,6 +212,17 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
     setShareOpen(true)
   }
 
+  if (!mounted) {
+    return (
+      <div className="flex flex-col gap-3" aria-busy="true" aria-label="Cargando el creador de partido">
+        <div className="h-8 w-40 rounded-lg bg-surface motion-safe:animate-pulse" />
+        <div className="h-4 w-24 rounded bg-surface motion-safe:animate-pulse" />
+        <div className="h-64 rounded-2xl bg-surface motion-safe:animate-pulse" />
+        <div className="h-12 rounded-xl bg-surface motion-safe:animate-pulse" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-4 h-[calc(100vh-180px)] md:h-[calc(100vh-110px)] overflow-hidden min-h-0">
       {step !== 2 && (
@@ -210,7 +237,14 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
             <span className="text-sm text-text-muted font-body">Paso {step + 1} de 3</span>
           </div>
 
-          <div className="flex gap-2">
+          <div
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={3}
+            aria-valuenow={step + 1}
+            aria-label={`Paso ${step + 1} de 3`}
+            className="flex gap-2"
+          >
             {[0, 1, 2].map(i => (
               <div key={i} className={cn('h-1 flex-1 rounded-full transition-all', i <= step ? 'bg-green-primary' : 'bg-border')} />
             ))}
@@ -227,6 +261,20 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
           </div>
           
           <div className="flex flex-col gap-2 flex-1 overflow-y-auto no-scrollbar pb-2 min-h-0">
+            {/* Con el grupo recién creado esto quedaba como un vacío negro sin
+                una sola pista de qué hacer. */}
+            {allPlayers.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-10 px-6 text-center">
+                <Users size={28} className="text-text-muted" aria-hidden="true" />
+                <p className="font-body text-sm text-text-primary font-semibold">
+                  Todavía no hay jugadores en el grupo
+                </p>
+                <p className="font-body text-sm text-text-muted">
+                  Sumá a los que van a jugar hoy con “Agregar invitado”, o cargá el plantel
+                  desde Jugadores.
+                </p>
+              </div>
+            )}
             {allPlayers.map(player => {
               const isSelected = selected.has(player.id)
               const injured = !!player.is_injured
@@ -268,12 +316,19 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
             {showGuestInput ? (
               <div className="flex gap-2">
                 <Input
+                  aria-label="Nombre del invitado"
                   placeholder="Nombre del invitado"
                   value={guestName}
                   onChange={e => setGuestName(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && addGuest()}
+                  onKeyDown={e => {
+                    if (e.key !== 'Enter') return
+                    // Sin preventDefault el Enter se lo comía el submit implícito
+                    // y el invitado nunca se agregaba.
+                    e.preventDefault()
+                    addGuest()
+                  }}
                   autoFocus
-                  className="flex-1 h-11"
+                  className="flex-1"
                 />
                 <Button onClick={addGuest} disabled={!guestName.trim()} className="h-11 px-4">Agregar</Button>
               </div>
@@ -311,7 +366,7 @@ export function MatchWizard({ groups, userId, initialMatch, initialPlayers }: Wi
                     onClick={() => setMatchType(value)}
                     className={cn(
                       'flex-1 h-12 rounded-xl border text-sm font-body font-semibold transition-colors',
-                      matchType === value ? 'bg-green-primary border-green-primary text-white' : 'bg-surface border-border text-text-secondary hover:border-green-primary/50'
+                      matchType === value ? 'bg-green-primary border-green-primary text-green-ink' : 'bg-surface border-border text-text-secondary hover:border-green-primary/50'
                     )}
                   >
                     {label}

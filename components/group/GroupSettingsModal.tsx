@@ -109,7 +109,7 @@ export function GroupSettingsModal({
           className={cn(
             'flex-1 py-2 rounded-lg text-sm font-body font-semibold transition-all',
             tab === 'edit'
-              ? 'bg-green-primary text-white'
+              ? 'bg-green-primary text-green-ink'
               : 'text-text-muted hover:text-text-primary'
           )}
         >
@@ -151,7 +151,7 @@ export function GroupSettingsModal({
                   className={cn(
                     'flex items-center justify-center w-full h-11 rounded-xl font-body text-sm font-semibold transition-all',
                     daysOfWeek.includes(i)
-                      ? 'bg-green-primary text-white shadow-lg shadow-green-primary/30'
+                      ? 'bg-green-primary text-green-ink shadow-lg shadow-green-primary/30'
                       : 'bg-bg border border-border text-text-secondary hover:border-green-primary/50'
                   )}
                 >
@@ -172,7 +172,7 @@ export function GroupSettingsModal({
                   className={cn(
                     'flex-1 py-2.5 rounded-xl border text-sm font-body font-semibold transition-colors',
                     matchType === value
-                      ? 'bg-green-primary border-green-primary text-white'
+                      ? 'bg-green-primary border-green-primary text-green-ink'
                       : 'bg-bg border-border text-text-secondary hover:border-green-primary/50'
                   )}
                 >

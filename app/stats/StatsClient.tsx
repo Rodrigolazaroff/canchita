@@ -47,6 +47,11 @@ export function StatsClient({ groups }: { groups: Group[] }) {
   const [players, setPlayers]   = useState<PlayerStatRow[]>([])
   const [teamMetrics, setTeamMetrics] = useState<TeamMetricsRow | null>(null)
   const [loading, setLoading]   = useState(true)
+  // El store persiste en localStorage: el servidor renderizaba null y el cliente
+  // el contenido, y React descartaba la hidratación entera de la página.
+  const [mounted, setMounted]   = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
     setGroups(groups)
@@ -75,7 +80,7 @@ export function StatsClient({ groups }: { groups: Group[] }) {
         .from('team_metrics_by_group')
         .select('*')
         .eq('group_id', group.id)
-        .single(),
+        .maybeSingle(),
     ]).then(([playersRes, teamRes]) => {
       setPlayers((playersRes.data ?? []) as PlayerStatRow[])
       setTeamMetrics(teamRes.data as TeamMetricsRow | null)
@@ -83,7 +88,23 @@ export function StatsClient({ groups }: { groups: Group[] }) {
     })
   }, [group?.id])
 
-  if (!group) return null
+  // Mismo markup en el servidor y en el primer render del cliente.
+  if (!mounted || !group) {
+    return (
+      <div className="flex flex-col gap-6" aria-busy="true" aria-label="Cargando estadísticas">
+        <div className="h-9 w-44 rounded-lg bg-surface motion-safe:animate-pulse" />
+        <div className="grid grid-cols-3 gap-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="h-20 rounded-2xl bg-surface motion-safe:animate-pulse" />
+          ))}
+        </div>
+        <div className="h-12 rounded-xl bg-surface motion-safe:animate-pulse" />
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="h-24 rounded-2xl bg-surface motion-safe:animate-pulse" />
+        ))}
+      </div>
+    )
+  }
 
   const totalGoals  = players.reduce((s, p) => s + p.total_goals, 0)
   const totalPlayed = teamMetrics?.total_played ?? 0
@@ -115,7 +136,7 @@ export function StatsClient({ groups }: { groups: Group[] }) {
             onClick={() => setTab(key)}
             className={cn(
               'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-body font-semibold transition-all',
-              tab === key ? 'bg-green-primary text-white' : 'text-text-muted hover:text-text-primary'
+              tab === key ? 'bg-green-primary text-green-ink' : 'text-text-muted hover:text-text-primary'
             )}
           >
             {icon} {label}

@@ -28,7 +28,10 @@ export async function AppShell({ profile, children, isAdmin, displayName }: AppS
       {/* Sidebar solo en desktop */}
       <Sidebar isAdmin={isAdmin} />
       {/* En desktop corremos el contenido a la derecha del sidebar (w-56) */}
-      <main className="md:ml-56 md:max-w-none max-w-2xl px-4 py-6 pb-24 md:pb-6 md:px-8">
+      <main
+        id="contenido"
+        className="md:ml-56 md:max-w-none max-w-2xl px-4 py-6 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-6 md:px-8"
+      >
         {children}
       </main>
       {/* BottomNav solo en mobile */}

@@ -135,7 +135,7 @@ export function LoginButton() {
             onClick={() => setMode(m as Mode)}
             className={cn(
               'flex-1 py-2 rounded-lg text-sm font-body font-semibold transition-all',
-              mode === m ? 'bg-green-primary text-white' : 'text-text-muted hover:text-text-primary'
+              mode === m ? 'bg-green-primary text-green-ink' : 'text-text-muted hover:text-text-primary'
             )}
           >
             {m === 'login' ? 'Iniciar sesión' : 'Registrarse'}
